@@ -1,281 +1,63 @@
-begin proc far
- mov ah,0    
-     mov al,13h  ;GRAPHICS
-     INT 10H  
-     
-      mov aX, 0600h ;bacground
-      mov bh, 0Fh
-      mov cx, 0000h
-      mov dx, 184Fh       
-      int 10h 
-      MOV DI,8380 ;STARTING PIXEL
-    CALL drawImage1
-    l:
-   mov ah,0
-int 16h  
-mov bl,28
-cmp ah, bl
-jz label2
-jnz l
-label2:
-mov ah,00h 
-mov al,03h 
-int 10h
+.286
+.model small
+.stack 64
+.data    
+lastDirection dw 1 ;;;;0 UP 1 DOWN 2 Right 3 Left
+x1 dw 0
+x2 dw 0
 
-mov ax,0600h
-mov bh,9eh  ;fore yellow/back blue 
-mov cx,0 ;start
-mov dx,184FH ;end
-int 10h
-;;;;;begin pos
-mov ah,2
-mov bh,0
-mov dl,1
-mov dh,1
-int 10h
-
-;printMsg EnterPlayer1msg
-mov ah,9
-mov dx,offset Player1msg
-int 21h
-;;;;;;;;;;;;
-mov ah,2
-mov bh,0
-mov dl,1;take name
-mov dh,2
-int 10h
-
-mov ah,0AH 
-mov dx,offset firstPlayerName
-int 21h
-lea si, firstPlayerName+2
-;cmp [si],
-;;;;;;;;;;;
-mov ah,2;take initial points for player1
-mov bh,0
-mov dl,0
-mov dh,8
-int 10h
-mov ah,9
-mov dx,offset initialpmsg
-int 21h   
- ;;;;;;;;;;;;;;;;;;; store it
-mov ah, 1 
-INT 21H 
-mov fppoints,al 
-;;;;;;;;;;;;;;;;;;;;;
-mov ah,2
-mov bh,0
-mov dl,0; second player turn
-mov dh,12
-int 10h 
-
-mov ah,9
-mov dx,offset interruptmsg
-int 21h  
-mov ah, 02h    
-    mov dl, 1
-    mov bh,0
-    mov dh, 15
-    int 10h
-;;;;;;;;;;;;;;;;;;;;
-mov ah,9
-mov dx,offset Player1msg
-int 21h 
-
-mov ah,2
-mov bh,0
-mov dl,1
-mov dh,16
-int 10h 
-
-mov ah,0AH 
-mov dx,offset secondPlayerName
-int 21h
-
-mov ah,2
-mov bh,0
-mov dl,1
-mov dh,20
-int 10h
-
-mov ah,9
-mov dx,offset initialpmsg
-int 21h   
-  
-mov ah, 1 
-INT 21H 
-mov sppoints,al 
-
-mov ah,2
-mov bh,0
-mov dl,1
-mov dh,22
-int 10h
-
-mov ah,9
-mov dx,offset choicePhasemsg
-int 21h  
-;;;;;;;;;;;move to second  page
-LOOPL:
-mov ah,0
-int 16h  
-mov bl,28
-cmp ah, bl 
-jNz LOOPL ; Clear the screen 
-lopp:
-mov ax,0600h
-mov bh,9eh  ;fore yellow/back blue 
-mov cx,0 ;start
-mov dx,184FH ;end
-int 10h
-;;;;;;;;;;;;;;chat part
-mov ah,2
-mov bh,0
-mov dl,0
-mov dh,19
-int 10h
-          
-mov ah,9                  
-mov al,'*'
-mov bh,0
-mov dx,80
-mov cx,dx
-mov bl,9eh
-int 10h
-;;;;;;;;;
-mov ah,2
-mov bh,0
-mov dl,27
-mov dh,10
-int 10h
-
-mov ah,9
-mov dx,offset startgameemsg
-int 21h  
-
-mov ah,2
-mov bh,0
-mov dl,27
-mov dh,14
-int 10h
-
-mov ah,9
-mov dx,offset endmsg
-int 21h 
-
-mov ah,0
-int 16h  
-mov bl,60
-cmp ah, bl
-je continue
-mov bl,1
-cmp ah, bl
-je endgame
-jmp lopp
+y1 dw 0
+y2 dw 0
+row dw 150 ;;;;; akher heta fl track mn taht b3do inline chat
+lengthT dw 32
+widthT dw 32 ;;; width el track
+carwidth dw 1 ;;; width el car
+temporaryLength dw 1 ;;; length el track el available
+temporaryLength2 dw 1 ;;; length el track el available mn point2
+dontDraw dw 0 ;;; boolean hytl3 ml checker functions
+drawn dw 1
+x dw 1
+y dw 1
+lengthD dw 32  
+k                   equ         320         
+pixel_size          equ          10
+pos_box1            dw          6450
+pos_box2            dw          7568
+color_box1          db          4
+color_box2          db          7
+color_track         db          3
+.code   
 
 
-endgame:
-MOV AH,4CH
-    INT 21H
-continue:
-mov ah,0    
-     mov al,13h  ;GRAPHICS
-     INT 10H  
-     
-      mov aX, 0600h ;bacground
-      mov bh, 0Ah
-      mov cx, 0000h
-      mov dx, 184Fh       
-      int 10h 
-      ;call game
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      mov aX, 0600h ;bacground
-      mov bh, 0Fh
-      mov cx, 1100h
-      mov dx, 154fh       
-      int 10h 
-        MOV AH,0CH
-        MOV AL,14 
-        mov cx , 0
-        mov dx ,176 
+main proc far
+        mov ax, @data
+        mov ds, ax
+        ;;;;; graphics mode
+        mov ah, 0
+        mov al, 13h
+        int 10h
+        ;;;;; graphics mode
         
-         
-     here: int 10h 
-     inc cx 
-     cmp cx,320
-     jnz here   
-     ;;;;;;;;;;;;;;;;;;;;;;;
-     MOV AH,02  
-    MOV BH,00  ;page    
-    MOV DL,0  ;column  
-    MOV DH,23  ;row 
-    INT 10H 
+        ;;;; extra segment set
 
-    mov ah,9
-
-        mov dx,offset startChatMsg
-    int 21h
-      mov DI,46080
         
-   
-   ;MOV AX,0A000h
-   ; MOV ES,AX
-
-    MOV SI,offset leftcaringame
-    
-    MOV DX,leftcaringame_height
-
-    REPEAT3:
-    MOV CX,llcar_width
-REP MOVSB
-ADD DI,SCREEN_WIDTH-llcar_width
-DEC DX
-JNZ REPEAT3
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-mov Di ,46370
-MOV SI,offset rightcar
-  MOV DX,leftcaringame_height
-
-    REPEAT2:
-    MOV CX,leftcaringame_width
-REP MOVSB
-ADD DI,SCREEN_WIDTH-leftcaringame_width
-DEC DX
-JNZ REPEAT2
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;z&z
-
-        call drawTrack
+        mov ax, 0A000h
+        mov es, ax
+        ;;;; extra segment set
+        
+        call cs:drawTrack
         mov pos_box1, 1
         mov pos_box2, 12
         call initialize_cars
         call play
 
-    
-    ret
- begin endp
- drawImage1 PROC
-    
-    MOV AX,0A000h
-    MOV ES,AX
+        hlt
+        ret
+main endp
 
-    MOV SI,offset beginPage
-    
-    MOV DX,beginPage_HEIGHT
-
-    REPEATt:
-    MOV CX,beginPage_WIDTH
-REP MOVSB
-ADD DI,SCREEN_WIDTH-beginPage_WIDTH
-DEC DX
-JNZ REPEATt
-    RET
-drawImage1 ENDP
-
-initialize_cars proc far
+; ------------------------- Draw Cars ----------------------------------------- ;
+; ----------------------- Initialize Car components --------------------------- ;
+initialize_cars proc
                 mov di,pos_box1
                 mov al,color_box1 
                 mov bl,8
@@ -287,7 +69,7 @@ initialize_cars proc far
                 ret
 initialize_cars endp
 ; ------------------------------------------------------------------------------;
-draw            proc far
+draw            proc
                 push di
                 pusha  ; for safety
                 mov bl,pixel_size ; loop pixel size times
@@ -302,7 +84,7 @@ draw            proc far
                 ret  
 draw            endp
 ; ------------- draw line ----------------- ;
-draw_l           proc far
+draw_l           proc
         ; ---- store changed vars ------------ ;
                 push cx 
                 push ax
@@ -317,7 +99,7 @@ draw_l           proc far
 draw_l            endp
 ; ----------------------------------------- ;
 ; ------------- draw vertical -------------- ;
-draw_v          proc far
+draw_v          proc 
                 push di
                 push cx  
                 mov cx,pixel_size
@@ -333,7 +115,7 @@ draw_v          proc far
 draw_v          endp
 
 ; - --------------------Move the second box---------------------------- ;
-move_b2            proc far
+move_b2            proc
             ; --- push vlues that will be updated -- ;
                 push di
                 push ax
@@ -543,7 +325,7 @@ move_b2            proc far
 move_b2             endp
 
 ; --------------------Move the first box--------------------------------- ;
-move_b1            proc far
+move_b1            proc
                 ; ----- Move box --------- ;
                 push di
                 push ax
@@ -762,7 +544,7 @@ move_b1            proc far
 move_b1             endp
 ; ------------------------------------------------------;
 
-play            proc far
+play            proc
                 push di
                 push ax
                 check_move: 
@@ -1948,3 +1730,4 @@ drawTrack proc far
         ret
 drawtrack endp
 
+end main
