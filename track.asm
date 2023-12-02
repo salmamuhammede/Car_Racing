@@ -49,6 +49,8 @@ main proc far
         mov pos_box1, 1
         mov pos_box2, 12
         call initialize_cars
+        ;;;;;;;;;;;;;;play
+         
         call play
 
         hlt
@@ -57,7 +59,7 @@ main endp
 
 ; ------------------------- Draw Cars ----------------------------------------- ;
 ; ----------------------- Initialize Car components --------------------------- ;
-initialize_cars proc
+initialize_cars proc 
                 mov di,pos_box1
                 mov al,color_box1 
                 mov bl,8
@@ -69,7 +71,7 @@ initialize_cars proc
                 ret
 initialize_cars endp
 ; ------------------------------------------------------------------------------;
-draw            proc
+draw            proc 
                 push di
                 pusha  ; for safety
                 mov bl,pixel_size ; loop pixel size times
@@ -84,7 +86,7 @@ draw            proc
                 ret  
 draw            endp
 ; ------------- draw line ----------------- ;
-draw_l           proc
+draw_l           proc 
         ; ---- store changed vars ------------ ;
                 push cx 
                 push ax
@@ -115,7 +117,7 @@ draw_v          proc
 draw_v          endp
 
 ; - --------------------Move the second box---------------------------- ;
-move_b2            proc
+move_b2            proc 
             ; --- push vlues that will be updated -- ;
                 push di
                 push ax
@@ -325,7 +327,7 @@ move_b2            proc
 move_b2             endp
 
 ; --------------------Move the first box--------------------------------- ;
-move_b1            proc
+move_b1            proc 
                 ; ----- Move box --------- ;
                 push di
                 push ax
@@ -544,7 +546,7 @@ move_b1            proc
 move_b1             endp
 ; ------------------------------------------------------;
 
-play            proc
+play            proc 
                 push di
                 push ax
                 check_move: 

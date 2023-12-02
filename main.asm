@@ -1,6 +1,6 @@
-.386
-.MODEL huge
-.Stack 128
+.286
+.MODEL small
+.Stack 64
 .Data
 beginPage DB 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53
  DB 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53, 53
@@ -794,7 +794,7 @@ x2 dw 0
 
 y1 dw 0
 y2 dw 0
-row dw 150 ;;;;; akher heta fl track mn taht b3do inline chat
+row dw 138 ;;;;; akher heta fl track mn taht b3do inline chat
 lengthT dw 32
 widthT dw 32 ;;; width el track
 carwidth dw 1 ;;; width el car
@@ -814,15 +814,16 @@ color_box2          db          7
 color_track         db          3
 
 .Code
-include begin.inc
+;include begin.inc
 ;include welcome.inc
-;include game.inc
+include game.inc
 
 main PROC far
 mov ax, @data
 mov ds, ax 
-call begin
-;call game
+
+;call begin
+call game
 ;call welcome
 
 MOV AH, 0
