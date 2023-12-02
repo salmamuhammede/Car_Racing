@@ -1587,7 +1587,7 @@ checkRight proc  ;;;y1 = y2, x2 3l ymen = use it
     ;;;; mmkn nhtag n shift el height 3la hasab howa gy mn taht wla fo2
 
     mov dx, lastDirection
-    cmp dx, 0
+    cmp dx, 1        ;;; down is 1
     jz downR
     sub bx, widthT
     jmp upR
@@ -1721,7 +1721,7 @@ checkLeft proc       ;;;y1 = y2, x1 3l shmal = use it
     ;;;; mmkn nhtag n shift el height 3la hasab howa gy mn taht wla fo2
 
     mov dx, lastDirection
-    cmp dx, 0
+    cmp dx, 1           ;;; down is 1
     jz downL
     sub bx, widthT
     jmp upL
@@ -1780,7 +1780,7 @@ drawUp proc far ;;; after checking
   jz exitU
   mov ax, temporaryLength
   cmp ax, temporaryLength2
-  jae skipSwapU
+  jbe skipSwapU
   mov ax, temporaryLength2
   mov temporaryLength, ax
   
@@ -1804,7 +1804,7 @@ drawRight proc far ;;; after checking
   escape_17:
   mov ax, temporaryLength
   cmp ax, temporaryLength2
-  jae skipSwapR
+  jbe skipSwapR
   mov ax, temporaryLength2
   mov temporaryLength, ax
 
@@ -1826,7 +1826,7 @@ drawLeft proc far ;;; after checking
   jz exitL
   mov ax, temporaryLength
   cmp ax, temporaryLength2
-  jae skipSwapL
+  jbe skipSwapL
   mov ax, temporaryLength2
   mov temporaryLength, ax
 
@@ -1849,7 +1849,7 @@ drawDOWN proc far
   jz exitD
   mov ax, temporaryLength
   cmp ax, temporaryLength2
-  jae skipSwapD
+  jbe skipSwapD
   mov ax, temporaryLength2
   mov temporaryLength, ax
   skipSwapD:
@@ -1868,7 +1868,8 @@ drawDOWN endp
 drawTrack proc far 
    
         
-        
+        ;;;; call new proc
+         call drawStartLine
         ;; test track up
         mov ax, widthT
         mov x2, ax
@@ -1936,6 +1937,8 @@ drawTrack proc far
         ;;;;; inline chat row
         mov ax, 320
         mov bx, word ptr row
+        ;;;;;; draw the line taht b pixel
+        inc bx
         mul bx
         mov di, ax
         mov al, 0eh
@@ -1943,8 +1946,67 @@ drawTrack proc far
         rep stosb
         
         ;;;;;inline chat row
+
+        ;;;; call for new proc
+        call drawEndLine
         ret
 drawtrack endp
+;;;;;;;;;;;;;;;;;;;;; Daowd 2 new procs
+
+drawEndLine proc far
+    mov ax, x1
+    mov bx, x2
+    cmp ax, bx
+    jz vertical
+    mov ax, 320
+    mov bx, y1
+    mul bx
+    add ax, x1
+    mov di, ax
+    mov cx, x2
+    sub cx, x1
+    mov al, 04h
+    rep stosb
+
+    jmp endLine
+    vertical:
+    mov cx, y2
+    sub cx, y1
+    mov ax, 320
+    mov bx, y1
+    mul bx
+    add ax, x1
+    mov di, ax
+    color:
+    mov al, 04h
+    stosb
+    add di, 319
+    loop color
+    
+    
+    
+    endLine:
+ret
+drawEndLine endp
+
+
+drawStartLine proc far
+    ;;start line
+    mov ax, widthT
+    mov lengthD, ax
+    call horizLineR
+    mov ax, lengthT
+    mov lengthD, ax
+    
+    mov x, 0
+    ;;start line
+ret
+drawStartLine endp
+
+
+
+;;;;;;;;;;;;;;;;;;;;;; Daowd 2 new procs
+
 
 gettime proc 
 
