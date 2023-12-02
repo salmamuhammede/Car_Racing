@@ -1,4 +1,16 @@
-gettime proc far
+ .MODEL small
+.Stack 64
+.Data
+seconds db ?
+hours  db ?
+timer db 0
+prevsec db ?
+cursec db ?  
+gameovermsg db 'Game Over','$'
+.code
+main PROC far
+mov ax, @data
+mov ds, ax 
 mov ah,0    
      mov al,13h  ;GRAPHICS
      INT 10H  
@@ -24,7 +36,7 @@ mov prevsec,bl
     cmp cursec, bh 
     je taketime
     inc timer      ; Check if 10 seconds have passed
-    cmp timer,5
+    cmp timer,30
 
     jge endofgame        ; If 10 seconds have passed, display the message
     jmp taketime
@@ -32,7 +44,7 @@ endofgame:
 mov aX, 0600h ;bacground
       mov bh, 03h
       mov cx, 0603h
-      mov dx, 1324h       
+      mov dx, 1224h       
       int 10h 
 
       MOV AH,02  
@@ -45,19 +57,15 @@ mov aX, 0600h ;bacground
 
         mov dx,offset gameovermsg
     int 21h
-    MOV AX,0A000h
-    MOV ES,AX
-    lea si,gameoverpic
-    mov di,25728
-     MOV DX,73
+MOV AH, 0
+    INT 16h
 
-    REPEAT4:
-    MOV CX,80
-REP MOVSB
-ADD DI,SCREEN_WIDTH-80
-DEC DX
-JNZ REPEAT4
-
-
+    MOV AH,4CH
+    INT 21H
 ret
-gettime endp
+ main endp
+
+
+
+End main
+ 

@@ -1,2 +1,9 @@
-Fatal: Unable to open file 'd:\main.obj'
+
+ Start  Stop   Length Name               Class
+
+ 00000H 01003H 01004H _TEXT              CODE
+ 01010H 0ABA5H 09B96H _DATA              DATA
+ 0ABB0H 0ABEFH 00040H STACK              STACK
+
+Program entry point at 0000:0FF2
 
