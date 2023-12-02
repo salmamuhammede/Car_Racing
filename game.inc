@@ -5,7 +5,7 @@ game proc far
      INT 10H  
      
       mov aX, 0600h ;bacground
-      mov bh, 0Fh
+      mov bh, 0fh
       mov cx, 0000h
       mov dx, 184Fh       
       int 10h 
@@ -40,7 +40,7 @@ mov al,03h
 int 10h
 
 mov ax,0600h
-mov bh,9eh  ;fore yellow/back blue 
+mov bh,3eh  ;fore yellow/back blue 
 mov cx,0 ;start
 mov dx,184FH ;end
 int 10h
@@ -70,7 +70,7 @@ lea si, firstPlayerName+2
 ;;;;;;;;;;;
 mov ah,2;take initial points for player1
 mov bh,0
-mov dl,0
+mov dl,1
 mov dh,8
 int 10h
 mov ah,9
@@ -83,7 +83,7 @@ mov fppoints,al
 ;;;;;;;;;;;;;;;;;;;;;
 mov ah,2
 mov bh,0
-mov dl,0; second player turn
+mov dl,1; second player turn
 mov dh,12
 int 10h 
 
@@ -142,7 +142,7 @@ cmp ah, bl
 jNz LOOPL ; Clear the screen 
 lopp:
 mov ax,0600h
-mov bh,9eh  ;fore yellow/back blue 
+mov bh,3eh  ;fore yellow/back blue 
 mov cx,0 ;start
 mov dx,184FH ;end
 int 10h
@@ -158,7 +158,7 @@ mov al,'*'
 mov bh,0
 mov dx,80
 mov cx,dx
-mov bl,9eh
+mov bl,3eh
 int 10h
 ;;;;;;;;;
 mov ah,2
@@ -272,7 +272,8 @@ call cs:drawTrack
     
   call initialize_cars
   ;;;;;;;;;;;;;;;;;;;;;;;play
-  call gettime
+  ;call gettime
+  call getwinner
   push di
                 push ax
                 check_move: 
@@ -2058,20 +2059,37 @@ mov aX, 0600h ;bacground
 
         mov dx,offset firstPlayerName+2
     int 21h
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-     MOV AH,02  
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;; secondplayer
+    MOV AH,02  
     MOV BH,00  ;page    
     MOV DL,30 ;column  
     MOV DH,8  ;row 
     INT 10H 
-
     mov ah,9
-
-        mov dx,offset secondPlayerName+2
+    mov dx,offset secondPlayerName+2
     int 21h
-    ;;;;;;;;;;;;;;;;;;;;;;;;;
-   ; MOV AX,0A000h
-    ;MOV ES,AX
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;score1
+    MOV AH,02  
+    MOV BH,00  ;page    
+    MOV DL,6;column  
+    MOV DH,16  ;row 
+    INT 10H 
+    mov ah,2
+    mov bh,0
+    mov dl,fppoints
+    int 21h
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;score2
+    MOV AH,02  
+    MOV BH,00  ;page    
+    MOV DL,32;column  
+    MOV DH,16  ;row 
+    INT 10H 
+    mov ah,2
+    mov bh,0
+    mov dl,sppoints
+    int 21h
+    ;;;;;;;;;;;;;;;;;;;;;;;;;monkey photo
+   
     lea si,gameoverpic
     mov di,25728
      MOV DX,73
@@ -2082,7 +2100,7 @@ REP MOVSB
 ADD DI,SCREEN_WIDTH-80
 DEC DX
 JNZ REPEAT4
-;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;; bluecar over
 lea si,blueover
  mov di,25632
      MOV DX,30
@@ -2093,7 +2111,7 @@ REP MOVSB
 ADD DI,SCREEN_WIDTH-50
 DEC DX
 JNZ REPEAT5
-;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; redcarin over
 lea si,redover
  mov di,25828
      MOV DX,30
@@ -2104,10 +2122,190 @@ REP MOVSB
 ADD DI,SCREEN_WIDTH-55
 DEC DX
 JNZ REPEAT6
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;; return to main
+mov timer,0
+ mov ah, 2ch
+    int 21h
+    mov prevsec, dh
 
+taketime2:
+mov bl,cursec
+mov prevsec,bl
+    mov ah, 2ch
+    int 21h
+    mov cursec, dh
+    mov bh,prevsec
+    ;sub cursec, bl ; Calculate the difference in seconds
+    cmp cursec, bh 
+    je taketime2
+    inc timer      ; Check if 10 seconds have passed
+    cmp timer,5
+
+    jge label2      ; If 10 seconds have passed, display the message
+    jmp taketime2
 
 ret
 gettime endp
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+getwinner proc 
+
+
+    mov ah, 2ch
+    int 21h
+    mov prevsec, dh
+
+taketimeE:
+mov bl,cursec
+mov prevsec,bl
+    mov ah, 2ch
+    int 21h
+    mov cursec, dh
+    mov bh,prevsec
+    ;sub cursec, bl ; Calculate the difference in seconds
+    cmp cursec, bh 
+    je taketimeE
+    inc timer      ; Check if 10 seconds have passed
+    cmp timer,5
+
+    jge endofgame2        ; If 10 seconds have passed, display the message
+    jmp taketimeE
+endofgame2:
+mov aX, 0600h ;bacground
+      mov bh, 03h
+      mov cx, 0603h
+      mov dx, 1324h       
+      int 10h 
+
+    MOV AH,02  
+    MOV BH,00  ;page    
+    MOV DL,16 ;column  
+    MOV DH,8  ;row 
+    INT 10H 
+
+    mov ah,9
+
+        mov dx,offset winningmsg
+    int 21h
+    ;;;;;;;;;;;;;;;;;;;;;;
+    MOV AH,02  
+    MOV BH,00  ;page    
+    MOV DL,4 ;column  
+    MOV DH,8  ;row 
+    INT 10H 
+    ;;;;;;;
+    mov ah,9
+
+        mov dx,offset firstPlayerName+2
+    int 21h
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;; secondplayer
+    MOV AH,02  
+    MOV BH,00  ;page    
+    MOV DL,30 ;column  
+    MOV DH,8  ;row 
+    INT 10H 
+    mov ah,9
+    mov dx,offset secondPlayerName+2
+    int 21h
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;score1
+    MOV AH,02  
+    MOV BH,00  ;page    
+    MOV DL,6;column  
+    MOV DH,16  ;row 
+    INT 10H 
+    mov ah,2
+    mov bh,0
+    mov dl,fppoints
+    int 21h
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;score2
+    MOV AH,02  
+    MOV BH,00  ;page    
+    MOV DL,32;column  
+    MOV DH,16  ;row 
+    INT 10H 
+    mov ah,2
+    mov bh,0
+    mov dl,sppoints
+    int 21h
+    ;;;;;;;;;;;;;;;;;;;;;;;;winner
+    mov winer,2
+    MOV AH,02  
+    MOV BH,00  ;page    
+    MOV DL,17;column  
+    MOV DH,18  ;row 
+    INT 10H 
+    cmp winer,1
+    je one
+
+    mov dx,offset secondPlayerName+2
+    jmp enr
+    one:
+    mov dx,offset firstPlayerName+2
+    enr:
+    mov ah,9
+    int 21h;
+    
+    
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;monkey photo
+   
+    lea si,celebratemonkey
+    mov di,25728
+     MOV DX,60
+
+    REPEATT4:
+    MOV CX,45
+REP MOVSB
+ADD DI,SCREEN_WIDTH-45
+DEC DX
+JNZ REPEATT4
+;;;;;;;;;;;;;;;;;;; bluecar over
+lea si,blueover
+ mov di,25632
+     MOV DX,30
+
+    REPEATT5:
+    MOV CX,50
+REP MOVSB
+ADD DI,SCREEN_WIDTH-50
+DEC DX
+JNZ REPEATT5
+;;;;;;;;;;;;;;;;; redcarin over
+lea si,redover
+ mov di,25828
+     MOV DX,30
+
+    REPEATT6:
+    MOV CX,55
+REP MOVSB
+ADD DI,SCREEN_WIDTH-55
+DEC DX
+JNZ REPEATT6
+ret
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;; return to main
+mov timer,0
+ mov ah, 2ch
+    int 21h
+    mov prevsec, dh
+
+taketimeE2:
+mov bl,cursec
+mov prevsec,bl
+    mov ah, 2ch
+    int 21h
+    mov cursec, dh
+    mov bh,prevsec
+    ;sub cursec, bl ; Calculate the difference in seconds
+    cmp cursec, bh 
+    je taketimeE2
+    inc timer      ; Check if 10 seconds have passed
+    cmp timer,5
+
+    jge label2      ; If 10 seconds have passed, display the message
+    jmp taketimeE2
+
+ret
+getwinner endp
 
 
 
