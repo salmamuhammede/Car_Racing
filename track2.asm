@@ -1,275 +1,73 @@
-game proc far
-;;;;;;;;;;;;;;;;;;
- mov ah,0    
-     mov al,13h  ;GRAPHICS
-     INT 10H  
-     
-      mov aX, 0600h ;bacground
-      mov bh, 00h
-      mov cx, 0000h
-      mov dx, 184Fh       
-      int 10h 
-      MOV DI,4840 ;STARTING PIXEL
-      ;;;;;;;;;;;;;;;;;
+.286
+.model small
+.stack 64
+.data    
+lastDirection dw 1 ;;;;0 UP 1 DOWN 2 Right 3 Left
+x1 dw 0
+x2 dw 0
 
-        MOV AX,0A000h
-    MOV ES,AX
+y1 dw 0
+y2 dw 0
+row dw 150 ;;;;; akher heta fl track mn taht b3do inline chat
+lengthT dw 35
+widthT dw 35 ;;; width el track
+carwidth dw 1 ;;; width el car
+temporaryLength dw 1 ;;; length el track el available
+temporaryLength2 dw 1 ;;; length el track el available mn point2
+dontDraw dw 0 ;;; boolean hytl3 ml checker functions
+drawn dw 1
+x dw 0
+y dw 0
+lengthD dw 32  
+k                   equ         320         
+pixel_size          equ          10
+pos_box1            dw          ?
+pos_box2            dw          ?
+color_track         db          3
+KeyList db 128 dup (0)
+last_mov_c1 db  1 ; 0 : up , 1: down, 2: right, 3: left
+last_mov_c2 db 1
 
-    MOV SI,offset beginPage
-    
-    MOV DX,170
+redcar DB 4, 4, 135, 162, 22, 22, 158, 160, 4, 4, 4, 111, 135, 160, 21, 21, 160, 135, 136, 4, 208, 207, 231, 229, 229, 229, 229, 231, 207, 208, 208, 208, 207, 207, 19, 19, 209, 207, 207, 207
+ DB 208, 208, 208, 208, 232, 232, 208, 208, 208, 208, 111, 111, 111, 136, 161, 159, 136, 111, 111, 111, 4, 4, 136, 12, 26, 26, 12, 136, 4, 4, 113, 4, 12, 64, 87, 87, 64, 12, 4, 111
+ DB 208, 136, 12, 64, 87, 87, 64, 12, 136, 208, 208, 232, 136, 12, 88, 88, 64, 135, 136, 207, 208, 209, 136, 160, 24, 24, 160, 136, 232, 207, 208, 207, 136, 160, 23, 23, 160, 136, 207, 207
+ DB 111, 136, 135, 159, 22, 22, 159, 135, 136, 111, 111, 136, 160, 22, 23, 23, 22, 160, 136, 111, 4, 4, 160, 23, 25, 25, 24, 159, 136, 4, 4, 4, 12, 64, 26, 27, 64, 12, 4, 4
+ DB 4, 4, 12, 64, 88, 88, 64, 12, 4, 4, 4, 4, 12, 12, 63, 63, 12, 12, 4, 4, 4, 40, 12, 12, 12, 12, 12, 39, 4, 4, 40, 40, 39, 12, 39, 39, 39, 39, 40, 40
+ DB 4, 4, 4, 39, 40, 40, 40, 40, 40, 40, 4, 4, 4, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40 
+bluecar DB 25, 28, 28, 56, 9, 9, 56, 28, 28, 23, 24, 28, 27, 24, 9, 9, 24, 27, 28, 24, 24, 26, 17, 18, 18, 18, 18, 17, 26, 25, 24, 24, 18, 18, 18, 18, 18, 18, 26, 25
+ DB 25, 23, 18, 18, 18, 18, 18, 18, 25, 26, 26, 21, 18, 18, 18, 17, 18, 18, 24, 26, 26, 21, 24, 175, 128, 128, 175, 23, 24, 26, 25, 23, 28, 56, 9, 9, 56, 28, 25, 26
+ DB 25, 227, 28, 56, 9, 9, 56, 28, 21, 25, 25, 18, 29, 56, 9, 9, 56, 29, 18, 25, 25, 18, 28, 79, 9, 9, 56, 28, 18, 26, 25, 18, 28, 56, 9, 9, 56, 28, 18, 26
+ DB 25, 224, 28, 24, 9, 9, 56, 28, 22, 26, 25, 25, 16, 16, 16, 16, 16, 16, 22, 26, 19, 16, 18, 16, 16, 16, 16, 16, 16, 19, 25, 16, 16, 16, 16, 16, 16, 16, 16, 25
+ DB 26, 20, 20, 20, 20, 20, 20, 20, 20, 25, 26, 28, 28, 27, 26, 26, 27, 28, 28, 26, 26, 28, 28, 56, 9, 9, 56, 28, 28, 25, 27, 28, 28, 56, 9, 9, 56, 28, 28, 26
+ DB 27, 28, 27, 56, 9, 9, 56, 28, 28, 27, 24, 28, 26, 56, 9, 9, 56, 26, 28, 26, 26, 28, 28, 56, 9, 9, 56, 28, 28, 26, 27, 28, 28, 56, 9, 9, 56, 28, 28, 27
+ DB 16, 28, 27, 23, 9, 9, 23, 27, 28, 16
+old_int_seg dw ?
+old_int_offset dw ?
+color_path  db 8
+delay    dw 15520  ;HOW MANY SECONDS TO WAIT.
+fill             dw 0
+skipFill         db 0
+addFill          dw 0
+.code   
 
-    REPEATt:
-    MOV CX,240
-REP MOVSB
-ADD DI,320-240
-DEC DX
-JNZ REPEATt
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;done
-    lm:
-   mov ah,0
-int 16h  
-mov bl,28
-cmp ah, bl
-jz label2
-jnz lm
-  
-label2:
-mov ah,00h 
-mov al,03h 
-int 10h
 
-mov ax,0600h
-mov bh,93h  ;fore yellow/back blue 
-mov cx,0 ;start
-mov dx,184FH ;end
-int 10h
-;;;;;begin pos
-mov ah,2
-mov bh,0
-mov dl,1
-mov dh,1
-int 10h
-
-;printMsg EnterPlayer1msg
-mov ah,9
-mov dx,offset Player1msg
-int 21h
-;;;;;;;;;;;;
-mov ah,2
-mov bh,0
-mov dl,1;take name
-mov dh,2
-int 10h
-
-mov ah,0AH 
-mov dx,offset firstPlayerName
-int 21h
-lea si, firstPlayerName+2
-;cmp [si],
-;;;;;;;;;;;
-mov ah,2;take initial points for player1
-mov bh,0
-mov dl,1
-mov dh,8
-int 10h
-mov ah,9
-mov dx,offset initialpmsg
-int 21h   
- ;;;;;;;;;;;;;;;;;;; store it
-mov ah, 1 
-INT 21H 
-mov fppoints,al 
-;;;;;;;;;;;;;;;;;;;;;
-mov ah,2
-mov bh,0
-mov dl,1; second player turn
-mov dh,12
-int 10h 
-
-mov ah,9
-mov dx,offset interruptmsg
-int 21h  
-mov ah, 02h    
-    mov dl, 1
-    mov bh,0
-    mov dh, 15
-    int 10h
-;;;;;;;;;;;;;;;;;;;;
-mov ah,9
-mov dx,offset Player1msg
-int 21h 
-
-mov ah,2
-mov bh,0
-mov dl,1
-mov dh,16
-int 10h 
-
-mov ah,0AH 
-mov dx,offset secondPlayerName
-int 21h
-
-mov ah,2
-mov bh,0
-mov dl,1
-mov dh,20
-int 10h
-
-mov ah,9
-mov dx,offset initialpmsg
-int 21h   
-  
-mov ah, 1 
-INT 21H 
-mov sppoints,al 
-mov ah,2
-mov bh,0
-mov dl,1
-mov dh,22
-int 10h
-mov ah,9
-mov dx,offset choicePhasemsg
-int 21h  
-;;;;;;;;;;;move to second  page
-LOOPL:
-mov ah,0
-int 16h  
-mov bl,28
-cmp ah, bl 
-jNz LOOPL ; Clear the screen 
-lopp:
-mov ax,0600h
-mov bh,3eh  ;fore yellow/back blue 
-mov cx,0 ;start
-mov dx,184FH ;end
-int 10h
-;;;;;;;;;;;;;;chat part
-mov ah,2
-mov bh,0
-mov dl,0
-mov dh,19
-int 10h
-          
-mov ah,9                  
-mov al,'*'
-mov bh,0
-mov dx,80
-mov cx,dx
-mov bl,3eh
-int 10h
-;;;;;;;;;
-mov ah,2
-mov bh,0
-mov dl,27
-mov dh,10
-int 10h
-
-mov ah,9
-mov dx,offset startgameemsg
-int 21h  
-
-mov ah,2
-mov bh,0
-mov dl,27
-mov dh,14
-int 10h
-
-mov ah,9
-mov dx,offset endmsg
-int 21h 
-mov ah,0
-int 16h  
-mov bl,60
-cmp ah, bl
-je continue
-mov bl,1
-cmp ah, bl
-je endgame
-jmp lopp
-endgame:
-MOV AH,4CH
-INT 21H
-continue:
-;;;;;;;;;;;;;;;;;;;;;
-MOV AX,0A000h
-   MOV ES,AX
- mov ah,0    
-     mov al,13h  ;GRAPHICS
-     INT 10H  
-     
-      mov aX, 0600h ;bacground
-      mov bh, 02h
-      mov cx, 0000h
-      mov dx, 184Fh       
-      int 10h 
-      ;call game
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      mov aX, 0600h ;bacground
-      mov bh, 09h
-      mov cx, 1200h
-      mov dx, 154fh       
-      int 10h 
-      ;;;;;;;;;;;
-      ;call  drawdecresesofanother
-      ;call Noobstacleleft
-      ;call cs:NoobstacleRightcre
-      ;call drawIncresespeed
-      ; call drawflyobstacle
-      call displayInitialTime
-      ;call drawcreateob;
-      ;;;;;;;;;;;;;;;;
-        MOV AH,0CH
-        MOV AL,14 
-        mov cx , 0
-        mov dx ,176      
-         
-     here: int 10h 
-     inc cx 
-     cmp cx,320
-     jnz here   
-     ;;;;;;;;;;;;;;;;;;;;;;;
-     MOV AH,02  
-    MOV BH,00  ;page    
-    MOV DL,0  ;column  
-    MOV DH,23  ;row 
-    INT 10H 
-
-    mov ah,9
-
-        mov dx,offset startChatMsg
-    int 21h
-      mov DI,46720
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;z&z
-      
+main proc far
+        mov ax, @data
+        mov ds, ax
+        ;;;;; graphics mode
+        mov ah, 0
+        mov al, 13h
+        int 10h
+        ;;;;; graphics mode
         
+        ;;;; extra segment set
 
-   
-   
-
-    MOV SI,offset leftcaringame
-    
-    MOV DX,20
-
-    REPEAT3:
-    MOV CX,33
-REP MOVSB
-ADD DI,SCREEN_WIDTH-33
-DEC DX
-JNZ REPEAT3
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-mov Di ,46675
-MOV SI,offset rightcar
-  MOV DX,20
-    REPEAT2:
-    MOV CX,37
-REP MOVSB
-ADD DI,SCREEN_WIDTH-37
-DEC DX
-JNZ REPEAT2
-
-
- call cs:drawTrack
+        
+        mov ax, 0A000h
+        mov es, ax
+        ;;;; extra segment set
+        
+        call cs:drawTrack
         mov pos_box1, 321
         mov pos_box2, 333
     
@@ -277,24 +75,13 @@ JNZ REPEAT2
         
         call initialize_cars
         ;;;;;;;;;;;;;;play
-       ; call drawobstacle
-        ;call drawflyinten
-        ;call drawbomb
-        ;call drawfire 
-        ;call drawbeatme
-          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    call starttime
-    call play        
-    call ret_interrupt    
-         ; If 10 seconds have passed, display the message
-    
+         
+        call play
         
-  ;;;;;;;;;;;;;;;;;;;;;;;play
-
-  ;call getwinner
-  
-      ret
-game endp
+        call ret_interrupt
+        hlt
+        ret
+main endp
 
 ; ------------------------- Draw Cars ----------------------------------------- ;
 set_interrupt proc
@@ -478,334 +265,11 @@ draw_v          endp
 ; --------------------------------------------- ;
 
 ; - --------------------Move the second box---------------------------- ;
-
-; --------------------------------------------- ;
-move_b1            proc
-                pusha
-                ; ----- Move box --------- ;
-                cmp state_c1,0
-                jz endmove
-                move_box: 
-                        push di ; store original value
-                        cmp [KeyList + 48h] ,1
-                        jnz temp_down1
-                    ; ------- checks first  --------------;
-                    ; ----- first check "track check top right corner"------;
-                    push si ; save its value
-                    mov si,offset color_path ; color track set
-                    sub di,k ; row - 1
-                    cmpsb  ; compare previous row with color
-                    jz sec_check_up1 ; ok clear
-                    pop si ; no out 
-                    jmp terminate1
-                    ; ----- second check -----;
-                    sec_check_up1: ; check track on the other corner
-                    add di,pixel_size - 2 ; adjust position
-                    dec si
-                    cmpsb 
-                    jz third_check_up1 ; ok clear
-                    pop si ; no out
-                    jmp terminate1
-                    temp_down1: ; because the above down2 is out of range
-                    jmp down
-                    ; ----- third check ------;
-                    third_check_up1:
-                    mov si, pos_box2
-                    mov di,pos_box1
-                    sub di,k
-                    add si,k*(pixel_size - 1)
-                    add si,pixel_size - 1
-                    cmp di,si
-                    ja all_good_up1
-                    ; ----- fourth check -----;
-                    fourth_check_up1:
-                    mov di,pos_box1
-                    mov si,pos_box2
-                    add si,k*(pixel_size - 1)
-                    sub di,k
-                    add di,pixel_size - 1
-                    cmp di,si
-                    jb all_good_up1
-                    pop si
-                    jmp terminate1
-                    ; ------------------------- ;
-                    all_good_up1:
-                        pop si
-                        mov di, pos_box1
-                        cmp last_mov_c1, 0
-                        jz escape_up1
-
-                        mov si,offset redcar ; red car
-                        mov di, pos_box1 ; copy to position
-                        call rotate_up ; rotate the car
-                        mov last_mov_c1,0 ; update last move
-                        jmp terminate1
-
-                        escape_up1:
-                        mov last_mov_c1 , 0
-                        removelast:  
-                                    add di, k*(pixel_size - 1) ; go to last row
-                                    mov al,color_path ; "MAY BE CHANGED BASED ON BACKGROUND COLOR."
-                                    mov cx,pixel_size ; 8 times size of row
-                                    rep stosb
-                                    
-                        pop di
-                        sub di,k   ; new  start position
-                        push di ; save new start position
-                        mov si,offset redcar
-                        call rotate_up ; draw line at the beginning as if move up
-                        pop di ; set new value of di
-                        mov pos_box1,di
-                        jmp endmove
-
-
-                        down: 
-                        cmp [KeyList + 50h] ,1
-                        jnz temp_right1
-                         ; ------- checks first  --------------;
-                    ; ----- first check "track check top right corner"------;
-                    push si ; save its value
-                    mov si,offset color_path ; color track set
-                    add di,k*pixel_size ; row - 1
-                    cmpsb  ; compare following row with color
-                    jz sec_check_down1 ; ok clear
-                    pop si ; no out 
-                    jmp terminate1
-                    ; ----- second check -----;
-                    sec_check_down1: ; check track on the other corner
-                    add di,pixel_size - 2 ; adjust position
-                    dec si
-                    cmpsb 
-                    jz third_check_down1 ; ok clear
-                    pop si ; no out
-                    jmp terminate1
-                    temp_right1: ; because the above down2 is out of range
-                    jmp right
-                    ; ----- third check ------;
-                    third_check_down1:
-                    mov si, pos_box2
-                    mov di,pos_box1
-                    add di,k*pixel_size
-                    add si,pixel_size - 1
-                    cmp di,si
-                    ja all_good_down1
-                    ; ----- fourth check -----;
-                    fourth_check_down1:
-                    mov di,pos_box1
-                    mov si,pos_box2
-                    add di,k*(pixel_size)
-                    add di,pixel_size - 1
-                    cmp di,si
-                    jb all_good_down1
-                    pop si
-                    jmp terminate1
-                    ; ------------------------- ;
-                    all_good_down1:
-                        pop si
-                        mov di, pos_box1
-                        
-                        cmp last_mov_c1, 1
-                        jz escape_down1 ; complete normally
-
-                        mov si,offset redcar ; red car
-                        mov di, pos_box1 ; copy to position
-                        call draw_c ; flip the car
-                        mov last_mov_c1,1 ; update last move
-                        jmp terminate1
-
-                        escape_down1:
-                        mov last_mov_c1 , 1
-                        removefirst:  
-                                    mov al,color_path ; "TO BE REPLACED BY THE BACKGROUND COLOR"
-                                    mov cx,pixel_size
-                                    rep stosb
-                                    
-                        pop di 
-                        add di,k ; set the new pos
-                        push di 
-                        mov si,offset redcar
-                        call draw_c ; draw horizontal line at the end
-                        pop di
-                        mov pos_box1,di ; set the new position 
-                        jmp endmove
-                      ; --- right --- ;
-                        right: 
-                       cmp [KeyList + 4Dh] ,1
-                        jnz temp_left 
-                ; ------- checks first  --------------;
-                ; ---- Track colors check ------------;
-                    push cx
-                    mov cx,pixel_size
-                    mov di,pos_box1
-                    add di,pixel_size
-                    mov si,offset color_path
-                    obstacle_hit_r1:
-                                    cmpsb 
-                                    jnz temp_again
-                                    dec di
-                                    dec si
-                                    add di,k
-                                    dec cx
-                                    jnz obstacle_hit_r1
-                    
-                    pop cx
-                ; -------------------------------------- ;
-                    mov di,pos_box1
-                    mov si,pos_box2
-                    add di,pixel_size
-                    cmp di,si
-                    ja fourth_check_r1
-                    sub si,di
-                    mov ax,si
-                    mov dx,0
-                    mov cx,k
-                    div cx
-                    cmp dx,0 ; there is no remainder meaning on the same vertcal line
-                    jne all_good_right1
-                    cmp ax,pixel_size
-                    ja  all_good_right1
-                    jmp terminate1
-                    temp_left: jmp left
-                    temp_again:
-                     pop cx
-                     jmp terminate1 ; "TEMP AGAAIINNN"
-                    fourth_check_r1:
-                    sub di,si
-                    mov ax,di
-                    mov dx,0
-                    mov cx,k
-                    div cx
-                    cmp dx,0 ; there is no remainder meaning on the same vertcal line
-                    jne all_good_right1
-                    cmp ax,pixel_size ; not on the same horizontal line
-                    ja  all_good_right1
-                    jmp terminate1
-                ; -------------------------------------- ;
-                    all_good_right1:
-                        mov di, pos_box1
-
-                        cmp last_mov_c1,2 ; if it is the last move don't rotate
-                        jz escape_rotr1 ; don't rotate gain
-                        mov si,offset redcar ; red car
-                        mov di, pos_box1 ; copy to position
-                        call rotate_right ; rotate the car
-                        mov last_mov_c1,2 ; update last move
-                        jmp terminate1
-                        escape_rotr1:
-
-                        mov last_mov_c1 , 2
-                        mov cx,pixel_size
-                        removeleft:  
-                                    mov al,color_path
-                                    stosb
-                                    dec di
-                                    add di,k
-                                    dec cx
-                                    jnz removeleft
-                                    
-                        pop di 
-                        inc di 
-                        mov si,offset redcar
-                        call rotate_right
-                        mov pos_box1,di
-                        jmp endmove
-                        tempppp:
-                        pop cx
-                        jmp terminate1
-                    ; --- left --- ;
-                        left: 
-                        cmp [KeyList + 4Bh] ,1
-                        jnz box2switchmid
-                ; ---- Track colors check ------------;
-                    push cx
-                    mov cx,pixel_size
-                    mov di,pos_box1
-                    dec di
-                    mov si,offset color_path
-                    obstacle_hit_l1:
-                                    cmpsb 
-                                    jnz tempppp
-                                    dec di
-                                    dec si
-                                    add di,k
-                                    dec cx
-                                    jnz obstacle_hit_l1
-                    
-                    pop cx
-                ; -------------------------------------- ;
-                ; ------------first car check--------------------- ;
-                    mov di,pos_box2
-                    mov si,pos_box1
-                    add di,pixel_size
-                    cmp di,si
-                    ja fourth_check_l1
-                    sub si,di
-                    mov ax,si
-                    mov dx,0
-                    mov cx,k
-                    div cx
-                    cmp dx,0 ; there is no remainder meaning on the same vertcal line
-                    jne all_good_left1
-                    cmp ax,pixel_size
-                    ja  all_good_left1
-                    jmp terminate1
-                    box2switchmid:jmp terminate1
-                    fourth_check_l1:
-                    sub di,si
-                    mov ax,di
-                    mov dx,0
-                    mov cx,k
-                    div cx
-                    cmp dx,0 ; there is no remainder meaning on the same vertcal line
-                    jne all_good_left1
-                    cmp ax,pixel_size ; not on the same horizontal line
-                    ja  all_good_left1
-                    jmp terminate1
-                    ;---- END of checks --------; 
-                    all_good_left1:
-                        mov di, pos_box1
-
-
-                        cmp last_mov_c1,3 ; if it is the last move don't rotate
-                        jz escape_rotl1 ; don't rotate gain
-                        mov si,offset redcar ; red car
-                        mov di, pos_box1 ; copy to position
-                        call rotate_left ; rotate the car
-                        mov last_mov_c1,3 ; update last move
-                        jmp terminate1
-                        escape_rotl1:
-                        mov last_mov_c1 , 3
-                        mov cx,pixel_size 
-                        add di,pixel_size - 1
-                        removeright:  
-                                    mov al,color_path
-                                    stosb
-                                    dec di
-                                    add di,k
-                                    dec cx
-                                    jnz removeright
-                                    
-                        pop di 
-                        dec di 
-                        mov si,offset redcar
-                        call rotate_left
-                        mov pos_box1,di
-                        jmp endmove
-
-                    terminate1:
-                        pop di
-                    endmove:
-                popa
-                ret
-move_b1             endp
-; ------------------------------- ;
 move_b2            proc
             ; --- push vlues that will be updated -- ;
                 push di
                 push ax
                 push cx
-                cmp state_c2,0
-                jz endmove2
                 mov di,pos_box2
                 ; ----- Move box 2--------- ;
 
@@ -816,10 +280,10 @@ move_b2            proc
                 ; ------- checks first  --------------;
                     ; ----- first check "track check top right corner"------;
                     push si ; save its value
-                    mov si,offset color_path ; color track set
+                    mov si,offset color_track ; color track set
                     sub di,k ; row - 1
                     cmpsb  ; compare previous row with color
-                    jz sec_check_up2 ; ok clear
+                    jnz sec_check_up2 ; ok clear
                     pop si ; no out 
                     jmp terminate2
                     ; ----- second check -----;
@@ -827,7 +291,7 @@ move_b2            proc
                     add di,pixel_size - 2 ; adjust position
                     dec si
                     cmpsb 
-                    jz third_check_up2 ; ok clear
+                    jnz third_check_up2 ; ok clear
                     pop si ; no out
                     jmp terminate2
                     temp_down2: ; because the above down2 is out of range
@@ -890,10 +354,10 @@ move_b2            proc
                         ; ------- checks first  --------------;
                     ; ----- first check "track check top right corner"------;
                     push si ; save its value
-                    mov si,offset color_path ; color track set
+                    mov si,offset color_track ; color track set
                     add di,k*pixel_size ; row + 1
                     cmpsb  ; compare following row with color
-                    jz sec_check_down2 ; ok clear
+                    jnz sec_check_down2 ; ok clear
                     pop si ; no out 
                     jmp terminate2
                     ; ----- second check -----;
@@ -901,7 +365,7 @@ move_b2            proc
                     add di,pixel_size - 2 ; adjust position
                     dec si
                     cmpsb 
-                    jz third_check_down2 ; ok clear
+                    jnz third_check_down2 ; ok clear
                     pop si ; no out
                     jmp terminate2
                     temp_right2: ; because the above down2 is out of range
@@ -959,21 +423,16 @@ move_b2            proc
                         cmp [KeyList + 20h],1 ; right key
                         jnz temp_left2
                 ; ---- Track colors check ------------;
-                    push cx
-                    mov cx,pixel_size
                     mov di,pos_box2
                     add di,pixel_size
-                    mov si,offset color_path
-                    obstacle_hit_r2:
-                                    cmpsb 
-                                    jnz temp_again2
-                                    dec di
-                                    dec si
-                                    add di,k
-                                    dec cx
-                                    jnz obstacle_hit_r2
-                    
-                    pop cx
+                    mov si,offset color_track
+                    cmpsb 
+                    jz temp_again2
+                    dec di
+                    add di,(pixel_size - 1)*k
+                    dec si
+                    cmpsb
+                    jz temp_again2
                 ; -------------------------------------- ;
                 ; ------------first car check--------------------- ;
                     mov di,pos_box2
@@ -992,9 +451,7 @@ move_b2            proc
                     ja  all_good_right2
                     jmp terminate2
                     temp_left2: jmp left2
-                    temp_again2: 
-                    pop cx
-                    jmp terminate2 ; "TEMP AGAAIINNN"
+                    temp_again2: jmp terminate2 ; "TEMP AGAAIINNN"
                     fourth_check_r2:
                     sub di,si
                     mov ax,di
@@ -1038,30 +495,22 @@ move_b2            proc
                         pop di
                         mov pos_box2,di
                         jmp endmove2
-                        tempppp2:
-                        pop cx
-                        jmp terminate2
-                        tempppp3: jmp terminate2
+                        tempppp2: jmp terminate2
                      ; --- left --- ;
                         left2: 
                         cmp [KeyList + 1Eh],1 ; ;eft key
-                        jnz tempppp3
+                        jnz tempppp2
                 ; ---- Track colors check ------------;
-                    push cx
-                    mov cx,pixel_size
                     mov di,pos_box2
                     dec di
-                    mov si,offset color_path
-                    obstacle_hit_l2:
-                                    cmpsb 
-                                    jnz tempppp2
-                                    dec di
-                                    dec si
-                                    add di,k
-                                    dec cx
-                                    jnz obstacle_hit_l2
-                    
-                    pop cx
+                    mov si,offset color_track
+                    cmpsb 
+                    jz tempppp2
+                    dec di
+                    add di,(pixel_size - 1)*k
+                    dec si
+                    cmpsb
+                    jz tempppp2
                 ; -------------------------------------- ;
                 ; -------------------------------------- ;
                     mov di,pos_box1
@@ -1130,6 +579,311 @@ move_b2            proc
                         pop di
                 ret
 move_b2             endp
+; --------------------------------------------- ;
+move_b1            proc
+                pusha
+                ; ----- Move box --------- ;
+                
+                move_box: 
+                        push di ; store original value
+                        cmp [KeyList + 48h] ,1
+                    
+                        jnz temp_down1
+                    ; ------- checks first  --------------;
+                    ; ----- first check "track check top right corner"------;
+                    push si ; save its value
+                    mov si,offset color_track ; color track set
+                    sub di,k ; row - 1
+                    cmpsb  ; compare previous row with color
+                    jnz sec_check_up1 ; ok clear
+                    pop si ; no out 
+                    jmp terminate1
+                    ; ----- second check -----;
+                    sec_check_up1: ; check track on the other corner
+                    add di,pixel_size - 2 ; adjust position
+                    dec si
+                    cmpsb 
+                    jnz third_check_up1 ; ok clear
+                    pop si ; no out
+                    jmp terminate1
+                    temp_down1: ; because the above down2 is out of range
+                    jmp down
+                    ; ----- third check ------;
+                    third_check_up1:
+                    mov si, pos_box2
+                    mov di,pos_box1
+                    sub di,k
+                    add si,k*(pixel_size - 1)
+                    add si,pixel_size - 1
+                    cmp di,si
+                    ja all_good_up1
+                    ; ----- fourth check -----;
+                    fourth_check_up1:
+                    mov di,pos_box1
+                    mov si,pos_box2
+                    add si,k*(pixel_size - 1)
+                    sub di,k
+                    add di,pixel_size - 1
+                    cmp di,si
+                    jb all_good_up1
+                    pop si
+                    jmp terminate1
+                    ; ------------------------- ;
+                    all_good_up1:
+                        pop si
+                        mov di, pos_box1
+                        cmp last_mov_c1, 0
+                        jz escape_up1
+
+                        mov si,offset redcar ; red car
+                        mov di, pos_box1 ; copy to position
+                        call rotate_up ; rotate the car
+                        mov last_mov_c1,0 ; update last move
+                        jmp terminate1
+
+                        escape_up1:
+                        mov last_mov_c1 , 0
+                        removelast:  
+                                    add di, k*(pixel_size - 1) ; go to last row
+                                    mov al,color_path ; "MAY BE CHANGED BASED ON BACKGROUND COLOR."
+                                    mov cx,pixel_size ; 8 times size of row
+                                    rep stosb
+                                    
+                        pop di
+                        sub di,k   ; new  start position
+                        push di ; save new start position
+                        mov si,offset redcar
+                        call rotate_up ; draw line at the beginning as if move up
+                        pop di ; set new value of di
+                        mov pos_box1,di
+                        jmp endmove
+
+
+                        down: 
+                        cmp [KeyList + 50h] ,1
+                        jnz temp_right1
+                         ; ------- checks first  --------------;
+                    ; ----- first check "track check top right corner"------;
+                    push si ; save its value
+                    mov si,offset color_track ; color track set
+                    add di,k*pixel_size ; row - 1
+                    cmpsb  ; compare following row with color
+                    jnz sec_check_down1 ; ok clear
+                    pop si ; no out 
+                    jmp terminate1
+                    ; ----- second check -----;
+                    sec_check_down1: ; check track on the other corner
+                    add di,pixel_size - 2 ; adjust position
+                    dec si
+                    cmpsb 
+                    jnz third_check_down1 ; ok clear
+                    pop si ; no out
+                    jmp terminate1
+                    temp_right1: ; because the above down2 is out of range
+                    jmp right
+                    ; ----- third check ------;
+                    third_check_down1:
+                    mov si, pos_box2
+                    mov di,pos_box1
+                    add di,k*pixel_size
+                    add si,pixel_size - 1
+                    cmp di,si
+                    ja all_good_down1
+                    ; ----- fourth check -----;
+                    fourth_check_down1:
+                    mov di,pos_box1
+                    mov si,pos_box2
+                    add di,k*(pixel_size)
+                    add di,pixel_size - 1
+                    cmp di,si
+                    jb all_good_down1
+                    pop si
+                    jmp terminate1
+                    ; ------------------------- ;
+                    all_good_down1:
+                        pop si
+                        mov di, pos_box1
+                        
+                        cmp last_mov_c1, 1
+                        jz escape_down1 ; complete normally
+
+                        mov si,offset redcar ; red car
+                        mov di, pos_box1 ; copy to position
+                        call draw_c ; flip the car
+                        mov last_mov_c1,1 ; update last move
+                        jmp terminate1
+
+                        escape_down1:
+                        mov last_mov_c1 , 1
+                        removefirst:  
+                                    mov al,color_path ; "TO BE REPLACED BY THE BACKGROUND COLOR"
+                                    mov cx,pixel_size
+                                    rep stosb
+                                    
+                        pop di 
+                        add di,k ; set the new pos
+                        push di 
+                        mov si,offset redcar
+                        call draw_c ; draw horizontal line at the end
+                        pop di
+                        mov pos_box1,di ; set the new position 
+                        jmp endmove
+                      ; --- right --- ;
+                        right: 
+                       cmp [KeyList + 4Dh] ,1
+                        jnz temp_left 
+                ; ------- checks first  --------------;
+                ; ---- Track colors check ------------;
+                    mov di,pos_box1
+                    add di,pixel_size
+                    mov si,offset color_track
+                    cmpsb 
+                    jz temp_again
+                    dec di
+                    add di,(pixel_size - 1)*k
+                    dec si
+                    cmpsb
+                    jz temp_again
+                ; -------------------------------------- ;
+                    mov di,pos_box1
+                    mov si,pos_box2
+                    add di,pixel_size
+                    cmp di,si
+                    ja fourth_check_r1
+                    sub si,di
+                    mov ax,si
+                    mov dx,0
+                    mov cx,k
+                    div cx
+                    cmp dx,0 ; there is no remainder meaning on the same vertcal line
+                    jne all_good_right1
+                    cmp ax,pixel_size
+                    ja  all_good_right1
+                    jmp terminate1
+                    temp_left: jmp left
+                    temp_again: jmp terminate1 ; "TEMP AGAAIINNN"
+                    fourth_check_r1:
+                    sub di,si
+                    mov ax,di
+                    mov dx,0
+                    mov cx,k
+                    div cx
+                    cmp dx,0 ; there is no remainder meaning on the same vertcal line
+                    jne all_good_right1
+                    cmp ax,pixel_size ; not on the same horizontal line
+                    ja  all_good_right1
+                    jmp terminate1
+                ; -------------------------------------- ;
+                    all_good_right1:
+                        mov di, pos_box1
+
+                        cmp last_mov_c1,2 ; if it is the last move don't rotate
+                        jz escape_rotr1 ; don't rotate gain
+                        mov si,offset redcar ; red car
+                        mov di, pos_box1 ; copy to position
+                        call rotate_right ; rotate the car
+                        mov last_mov_c1,2 ; update last move
+                        jmp terminate1
+                        escape_rotr1:
+
+                        mov last_mov_c1 , 2
+                        mov cx,pixel_size
+                        removeleft:  
+                                    mov al,color_path
+                                    stosb
+                                    dec di
+                                    add di,k
+                                    dec cx
+                                    jnz removeleft
+                                    
+                        pop di 
+                        inc di 
+                        mov si,offset redcar
+                        call rotate_right
+                        mov pos_box1,di
+                        jmp endmove
+                        tempppp:jmp terminate1
+                    ; --- left --- ;
+                        left: 
+                        cmp [KeyList + 4Bh] ,1
+                        jnz box2switchmid
+                ; ---- Track colors check ------------;
+                    mov di,pos_box1
+                    dec di
+                    mov si,offset color_track
+                    cmpsb 
+                    jz tempppp
+                    dec di
+                    add di,(pixel_size - 1)*k
+                    dec si
+                    cmpsb
+                    jz tempppp
+                ; -------------------------------------- ;
+                ; ------------first car check--------------------- ;
+                    mov di,pos_box2
+                    mov si,pos_box1
+                    add di,pixel_size
+                    cmp di,si
+                    ja fourth_check_l1
+                    sub si,di
+                    mov ax,si
+                    mov dx,0
+                    mov cx,k
+                    div cx
+                    cmp dx,0 ; there is no remainder meaning on the same vertcal line
+                    jne all_good_left1
+                    cmp ax,pixel_size
+                    ja  all_good_left1
+                    jmp terminate1
+                    box2switchmid:jmp terminate1
+                    fourth_check_l1:
+                    sub di,si
+                    mov ax,di
+                    mov dx,0
+                    mov cx,k
+                    div cx
+                    cmp dx,0 ; there is no remainder meaning on the same vertcal line
+                    jne all_good_left1
+                    cmp ax,pixel_size ; not on the same horizontal line
+                    ja  all_good_left1
+                    jmp terminate1
+                    ;---- END of checks --------; 
+                    all_good_left1:
+                        mov di, pos_box1
+
+
+                        cmp last_mov_c1,3 ; if it is the last move don't rotate
+                        jz escape_rotl1 ; don't rotate gain
+                        mov si,offset redcar ; red car
+                        mov di, pos_box1 ; copy to position
+                        call rotate_left ; rotate the car
+                        mov last_mov_c1,3 ; update last move
+                        jmp terminate1
+                        escape_rotl1:
+                        mov last_mov_c1 , 3
+                        mov cx,pixel_size 
+                        add di,pixel_size - 1
+                        removeright:  
+                                    mov al,color_path
+                                    stosb
+                                    dec di
+                                    add di,k
+                                    dec cx
+                                    jnz removeright
+                                    
+                        pop di 
+                        dec di 
+                        mov si,offset redcar
+                        call rotate_left
+                        mov pos_box1,di
+                        jmp endmove
+
+                    terminate1:
+                        pop di
+                    endmove:
+                popa
+                ret
+move_b1             endp
 ; ------------------------------- ;
 
 play            proc
@@ -1137,32 +891,20 @@ play            proc
                 push ax
                 check_move:
                         sti
-                        mov cx,global_delay
+                        mov cx,delay
                         call my_delay 
                         cli
                         mov di,pos_box1
                         call move_b1
                         call move_b2
-                        call markend
-                        cmp flag,1
-                        jz endr  
-                        cmp powerupflag,1 
-                         jz callpowers                    
                         jmp check_move
-                        callpowers:
-                        call randompower
-                        call choosewhichTorender
-                        mov powerupflag,0
-                        jmp check_move
-                        endr:
-                        call timeover;
-                        
                 pop ax
                 pop di
                 
                 ret
 play            endp
 
+; ------------------------------------------------------------------------;
 my_delay proc 
     
      delay_loop:
@@ -1170,128 +912,15 @@ my_delay proc
         jnz delay_loop  ; Jump back to the loop if CX is not zero
     ret 
 my_delay endp
-;---------------------------------------------;
-freeze_1 proc
-        push cx
-        cmp state_c1, 1 ; compare if move state
-        jnz check_zero1 ; not move 
-        dec delay_m_1 ; udate delay
-        jnz end_freeze1 ; not ended
-        mov state_c1,0 ; else: switch to freeze
-        mov cx, sdelay_m_1 ; update variables
-        mov delay_m_1, cx
-        ;------------------------;
-        check_zero1: ; means freeze state
-        dec delay_f_1
-        jnz end_freeze1
-        mov state_c1,1
-        mov cx, sdelay_f_1
-        mov delay_f_1, cx
-        ;------------------------;
-        end_freeze1:
-        pop cx
-        ret
-freeze_1 endp
-;----------------------------------------------------;
-freeze_2 proc
-        push cx
-        cmp state_c2, 1 ; compare if move state
-        jnz check_zero2 ; not move 
-        dec delay_m_2 ; udate delay
-        jnz end_freeze2 ; not ended
-        mov state_c2,0 ; else: switch to freeze
-        mov cx, sdelay_m_2 ; update variables
-        mov delay_m_2, cx
-        ;------------------------;
-        check_zero2: ; means freeze state
-        dec delay_f_2
-        jnz end_freeze2
-        mov state_c2,1
-        mov cx, sdelay_f_2
-        mov delay_f_2, cx
-        ;------------------------;
-        end_freeze2:
-        pop cx
-        ret
-freeze_2 endp
-;---------------------------------------------------;
-obstacleDraw proc far
-
-                          ;;; obstacle;;;
-                    push bx
-                    push cx
-                    push dx
-                    mov dx, cx
-                    mov cx, widthT
-                    
-                    sub cx, dx
-                    mov dx, cx
-                    mov cx, ax ;;;; 3shan el color
-                    cmp drawObstacle, 0
-                    jz skipObstacleD
-                    cmp addFill,1         ;; corners msh hytrsm feha
-                    jz skipObstacleD
-                    mov bx, lengthD
-                    cmp bx, widthT
-                    jb skipObstacleD
-
-
-                    ;;; drawing
-                    mov ax, obstacleLane
-                    mov bx, lengthLane
-                    push dx
-                    mul bx
-                    pop dx
-                    cmp dx, ax
-                    jbe skipObstacleD
-                    add ax, lengthLane
-                    cmp dx, ax
-                    ja skipObstacleD
-                                       
-                    ;;;
-                    mov al, obstacle_color
-                    mov bx, lengthObstacle
-                  
-                    sub bx, lengthDrawn
-                    jz addWidthObstacleD
-                    ;;;
-
-                    inc lengthDrawn 
-                    jmp noChangeD     ;;; draw obstacle
-                    addWidthObstacleD:
-                    inc widthDrawn
-                    mov lengthDrawn, 0
-                    mov ax, widthDrawn
-                    cmp ax, lengthObstacle
-                    jz obstacleDone
-                    jmp skipObstacleD
-                    obstacleDone:
-                    mov drawObstacle,0
-                    mov widthDrawn, 0
-                    mov lengthDrawn, 0
-                    skipObstacleD:
-                    mov ax, cx
-                    nochangeD:
-
-                    pop dx
-                    pop cx
-                    pop bx
-                    ret
-                    ;;; obstacle;;;
-obstacleDraw endp
+; ------------------------ Draw Track ------------------------------------------ ;
 verticalLineD proc far                              ;;;; ersm vertical line ta7t
-      ;pusha        
-
-                  
-
-
+      ;pusha
                     mov   ax, 320
                     mov   bx, y
                     mul   bx
                     add   ax, x
                     mov   di, ax
                     mov   cx, lengthD
-
       Line:         
     
                     mov   al, 03h
@@ -1310,11 +939,8 @@ verticalLineD proc far                              ;;;; ersm vertical line ta7t
                     mov   al, 03h
                     scasb
                     jz    onceD
-
                     mov   al, 08h
-                    call obstacleDraw
       onceD:        
-                    
                     dec   di
                     stosb
                     loop  fillDown
@@ -1354,7 +980,6 @@ verticalLineU proc far                              ;;;; ersm vertical line fo2
                     sub   di, 2
                     mov   dx, cx
                     mov   al, 08h
-
                     mov   cx, widthT
                     add   cx, addFill
                     dec   cx
@@ -1363,7 +988,6 @@ verticalLineU proc far                              ;;;; ersm vertical line fo2
                     scasb
                     jz    onceU
                     mov   al, 08h
-                    call obstacleDraw
       onceU:        
                     dec   di
                     stosb
@@ -1405,7 +1029,6 @@ horizLineR proc far                                 ;;;; ersm Horizontal line ym
                     add   di, 319
                     mov   dx, cx
                     mov   al, 08h
-                    
                     mov   cx, widthT
                     add   cx, addFill
                     dec   cx
@@ -1414,7 +1037,6 @@ horizLineR proc far                                 ;;;; ersm Horizontal line ym
                     scasb
                     jz    onceR
                     mov   al, 08h
-                    call obstacleDraw
       onceR:        
                     dec   di
                     stosb
@@ -1463,7 +1085,6 @@ horizLineL proc far
                     scasb
                     jz    onceL
                     mov   al, 08h
-                    call obstacleDraw
       onceL:        
                     dec   di
                     stosb
@@ -2005,31 +1626,10 @@ checkUP proc far
                     mov   temporaryLength2, 0
                     mov   temporaryLength, 0
                     mov   dontDraw, 1
-                    ret
     
       lowU:         
                     mov   temporaryLength2, 0
                     mov   temporaryLength, 0
-                          ;;;; mmkn nhtag n shift el X 3la hasab howa gy mn ymen wla shmal
-
-                    mov   dx, lastDirection
-                    cmp   dx, 0                     ;;; cancel
-                    jz    leftU2                     ;;;;;; cancel
-                    cmp   dx, 2
-                    jz    rightU2
-                    mov   dx, x1                    ;;;;;; added to not exit bounds
-                    cmp   dx, widthT                ;;;;;; added to not exit bounds
-                    jb    dontD                     ;;;;;; added to not exit bounds
-                    sub   ax, widthT
-                    jmp   leftU2
-      rightU2:       
-                    add   ax, widthT
-                    mov   dx, x2                    ;;;;;; added to not exit bounds
-                    add   dx, widthT                ;;;;;; added to not exit bounds
-                    cmp   dx, 319                   ;;;;;; added to not exit bounds
-                    ja    dontD                     ;;;;;; added to not exit bounds
-      leftU2:        
-      ;;;;
       exitAllU:     
                     ret
 checkUp endp
@@ -2181,34 +1781,9 @@ checkDown proc far                                  ;;;; still to be tested  dym
                     mov   temporaryLength2, 0
                     mov   temporaryLength, 0
                     mov   dontDraw, 1
-                    ret
       low1D:        
                     mov   temporaryLength2, 0
                     mov   temporaryLength, 0
-                       add   ax, x2
-    
-      ;;;; mmkn nhtag n shift el X 3la hasab howa gy mn ymen wla shmal
-
-                    mov   dx, lastDirection
-                    cmp   dx, 1                     ;;; cancel
-                    jz    leftD2                    ;;;;;; cancel
-                    cmp   dx, 2
-                    jz    rightD2
-                    mov   dx, x1                    ;;;;;; added to not exit bounds
-
-                    cmp   dx, widthT                ;;;;;; added to not exit bounds
-                    jb    dontD                     ;;;;;; added to not exit bounds
-                    sub   ax, widthT
-                    jmp   leftD2
-      rightD2:       
-                    add   ax, widthT
-                    mov   dx, x2                    ;;;;;; added to not exit bounds
-                    add   dx, widthT                ;;;;;; added to not exit bounds
-                    cmp   dx, 319                   ;;;;;; added to not exit bounds
-                    ja    dontD                     ;;;;;; added to not exit bounds
-    
-      leftD2:        
-      ;;;;
       exitAllD:     
                     ret
 checkDown endp
@@ -2351,34 +1926,10 @@ checkRight proc far                                 ;;;y1 = y2, x2 3l ymen = use
                     mov   temporaryLength2, 0
                     mov   temporaryLength, 0
                     mov   dontDraw, 1
-                    ret
     
       lowR:         
                     mov   temporaryLength2, 0
                     mov   temporaryLength, 0
-                     mov   bx, y2                    ;;;; changed to y2
-    
-      ;;;; mmkn nhtag n shift el height 3la hasab howa gy mn taht wla fo2
-
-                    mov   dx, lastDirection
-                    cmp   dx, 2                     ;;; cancel
-                    jz    upR2                      ;;;;;; cancel
-                    cmp   dx, 1
-                    jz    downR2
-                    sub   bx, widthT
-                    mov   dx, y1                    ;;;;;; added to not exit bounds
-                    cmp   dx, widthT                ;;;;;; added to not exit bounds
-                    jb    dontR                     ;;;;;; added to not exit bounds
-                    jmp   upR2
-      downR2:        
-                    add   bx, widthT
-                    mov   dx, y2                    ;;;;;; added to not exit bounds
-                    add   dx, widthT                ;;;;;; added to not exit bounds
-                    cmp   dx, row                   ;;;;;; added to not exit bounds
-                    jae   dontR                     ;;;;;; added to not exit bounds
-      upR2:          
-      ;;;;
-                    
       exitAllR:     
                     ret
 checkRight endp
@@ -2513,34 +2064,10 @@ checkLeft proc far                                  ;;;y1 = y2, x1 3l shmal = us
                     mov   temporaryLength2, 0
                     mov   temporaryLength, 0
                     mov   dontDraw, 1
-                    ret
     
       lowL:         
                     mov   temporaryLength2, 0
                     mov   temporaryLength, 0
-                       mov   bx, y2                    ;;;  change to y2 test
-      ;;;; mmkn nhtag n shift el height 3la hasab howa gy mn taht wla fo2
-
-                    mov   dx, lastDirection
-                    cmp   dx, 3                     ;;; cancel
-                    jz    upL2                       ;;;;;; cancel
-                    cmp   dx, 1
-                    jz    downL2
-                    sub   bx, widthT
-                    mov   dx, y1                    ;;;;;; added to not exit bounds
-                    cmp   dx, widthT                ;;;;;; added to not exit bounds
-                    jb    dontL                     ;;;;;; added to not exit bounds
-                    jmp   upL2
-      downL2:        
-                    add   bx, widthT
-                    mov   dx, y2                    ;;;;;; added to not exit bounds
-                    add   dx, widthT                ;;;;;; added to not exit bounds
-                    cmp   dx, row                   ;;;;;; added to not exit bounds
-                    jae   dontL                     ;;;;;; added to not exit bounds
-      upL2:          
-      ;;;;
-                    
-                    
       exitAllL:     
                     ret
     
@@ -2649,7 +2176,10 @@ drawTrack proc far
                     mov   x2, ax
 
                     call  drawDown
-
+                    
+                    
+                    call drawUp
+                    call drawLeft
                     mov   cx, 00ffh                 ;;; 3dd el randoms
       ;;; random
       rand:         
@@ -2678,9 +2208,6 @@ drawTrack proc far
       ;;; ah = rest 
                     
                     jz next
-
-                    call RandObst
-
                     cmp   ah, 0
                     jz    U
                     cmp   ah, 3
@@ -2785,622 +2312,6 @@ drawStartLine proc far
                     ret
 drawStartLine endp
 
-RandObst proc far
-
-                    mov bx, ax            
-                    mov al, ah            ;; random 0 to 3 fl al wl ah
-                    
-                    and ah, 1
-                    
-                    jz noObst
-
-                    mov drawObstacle,1
-
-                    mov ah,0
-                    mov cl,3
-                    div cl
-                  ;; result in al, ah = rem
-                    mov al, ah
-                    mov ah,0
-                    mov obstacleLane, ax
-                    
-                    noObst:
-                    mov ax, bx
-                    ret
-RandObst endp
-;;;;;;;;;;;;;;;;;;;;;; Daowd 2 new procs
-starttime proc
-   mov ah, 2ch
-   int 21h
-   mov prevsec, dh
-   ret
-starttime endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;initilize time
-markend proc 
-taketimess:
-  mov ah, 2ch
-  int 21h
-   mov cursec, dh
-    mov bh,prevsec    
-    cmp cursec, bh 
-    je nochange
-    inc timer      ; Check if 10 seconds have passed
-    inc poweruptimer
-    cmp poweruptimer,2
-    jnz rest
-    mov powerupflag,1
-    mov  poweruptimer,0  
-    rest:
-    cmp timer,10
-    jnz nochange
-    mov flag,1;
-    nochange:
-   mov bl,cursec
-   mov prevsec,bl
-    ret
-markend endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;time is overrrrrrrrrr
-timeover proc     
-endofgame:
-mov aX, 0600h ;bacground
-      mov bh, 03h
-      mov cx, 0603h
-      mov dx, 1324h       
-      int 10h 
-
-    MOV AH,02  
-    MOV BH,00  ;page    
-    MOV DL,16 ;column  
-    MOV DH,8  ;row 
-    INT 10H 
-
-    mov ah,9
-
-        mov dx,offset gameovermsg
-    int 21h
-    ;;;;;;;;;;;;;;;;;;;;;;
-    MOV AH,02  
-    MOV BH,00  ;page    
-    MOV DL,4 ;column  
-    MOV DH,8  ;row 
-    INT 10H 
-    ;;;;;;;
-    mov ah,9
-
-        mov dx,offset firstPlayerName+2
-    int 21h
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;; secondplayer
-    MOV AH,02  
-    MOV BH,00  ;page    
-    MOV DL,30 ;column  
-    MOV DH,8  ;row 
-    INT 10H 
-    mov ah,9
-    mov dx,offset secondPlayerName+2
-    int 21h
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;score1    
-    ;;;;;;;;;;;;;;;;;;;;;;;;;monkey photo
-   
-    lea si,gameoverpic
-    mov di,25728
-     MOV DX,73
-
-    REPEAT4:
-    MOV CX,80
-REP MOVSB
-ADD DI,SCREEN_WIDTH-80
-DEC DX
-JNZ REPEAT4
-;;;;;;;;;;;;;;;;;;; bluecar over
-lea si,blueover
- mov di,25632
-     MOV DX,30
-
-    REPEAT5:
-    MOV CX,50
-REP MOVSB
-ADD DI,SCREEN_WIDTH-50
-DEC DX
-JNZ REPEAT5
-;;;;;;;;;;;;;;;;; redcarin over
-lea si,redover
- mov di,25828
-     MOV DX,30
-
-    REPEAT6:
-    MOV CX,55
-REP MOVSB
-ADD DI,SCREEN_WIDTH-55
-DEC DX
-JNZ REPEAT6
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;; return to main
-mov timer,0
- mov ah, 2ch
-    int 21h
-    mov prevsec, dh
-
-taketime2:
-mov bl,cursec
-mov prevsec,bl
-    mov ah, 2ch
-    int 21h
-    mov cursec, dh
-    mov bh,prevsec
-    ;sub cursec, bl ; Calculate the difference in seconds
-    cmp cursec, bh 
-    je taketime2
-    inc timer2      ; Check if 10 seconds have passed
-    cmp timer2,5
-
-    jge label2      ; If 10 seconds have passed, display the message
-    jmp taketime2
-
-ret
-timeover endp
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;winerrrrrrrrrrrrrrrrrrr
-getwinner proc 
-    mov ah, 2ch
-    int 21h
-    mov prevsec, dh
-taketimeE:
-mov bl,cursec
-mov prevsec,bl
-    mov ah, 2ch
-    int 21h
-    mov cursec, dh
-    mov bh,prevsec
-    ;sub cursec, bl ; Calculate the difference in seconds
-    cmp cursec, bh 
-    je taketimeE
-    inc timer      ; Check if 10 seconds have passed
-    cmp timer,10
-
-    jge endofgame2        ; If 10 seconds have passed, display the message
-    jmp taketimeE
-endofgame2:
-mov aX, 0600h ;bacground
-      mov bh, 03h
-      mov cx, 0603h
-      mov dx, 1324h       
-      int 10h 
-
-    MOV AH,02  
-    MOV BH,00  ;page    
-    MOV DL,16 ;column  
-    MOV DH,8  ;row 
-    INT 10H 
-
-    mov ah,9
-
-        mov dx,offset winningmsg
-    int 21h
-    ;;;;;;;;;;;;;;;;;;;;;;
-    MOV AH,02  
-    MOV BH,00  ;page    
-    MOV DL,4 ;column  
-    MOV DH,8  ;row 
-    INT 10H 
-    ;;;;;;;
-    mov ah,9
-
-        mov dx,offset firstPlayerName+2
-    int 21h
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;; secondplayer
-    MOV AH,02  
-    MOV BH,00  ;page    
-    MOV DL,30 ;column  
-    MOV DH,8  ;row 
-    INT 10H 
-    mov ah,9
-    mov dx,offset secondPlayerName+2
-    int 21h
-    
-    ;;;;;;;;;;;;;;;;;;;;;;;;winner
-    mov winer,2
-    MOV AH,02  
-    MOV BH,00  ;page    
-    MOV DL,17;column  
-    MOV DH,18  ;row 
-    INT 10H 
-    cmp winer,1
-    je one
-
-    mov dx,offset secondPlayerName+2
-    jmp enr
-    one:
-    mov dx,offset firstPlayerName+2
-    enr:
-    mov ah,9
-    int 21h;
-     ;;;;;;;;;;;;;;;;;;;;;;;;;monkey photo
-   
-    lea si,celebratemonkey
-    mov di,25728
-     MOV DX,60
-    REPEATT4:
-    MOV CX,45
-REP MOVSB
-ADD DI,SCREEN_WIDTH-45
-DEC DX
-JNZ REPEATT4
-;;;;;;;;;;;;;;;;;;; bluecar over
-lea si,blueover
- mov di,25632
-     MOV DX,30
-
-    REPEATT5:
-    MOV CX,50
-REP MOVSB
-ADD DI,SCREEN_WIDTH-50
-DEC DX
-JNZ REPEATT5
-;;;;;;;;;;;;;;;;; redcarin over
-lea si,redover
- mov di,25828
-     MOV DX,30
-
-    REPEATT6:
-    MOV CX,55
-REP MOVSB
-ADD DI,SCREEN_WIDTH-55
-DEC DX
-JNZ REPEATT6
-ret
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;; return to main
-mov timer,0
- mov ah, 2ch
-    int 21h
-    mov prevsec, dh
-
-taketimeE2:
-mov bl,cursec
-mov prevsec,bl
-    mov ah, 2ch
-    int 21h
-    mov cursec, dh
-    mov bh,prevsec
-    ;sub cursec, bl ; Calculate the difference in seconds
-    cmp cursec, bh 
-    je taketimeE2
-    inc timer      ; Check if 10 seconds have passed
-    cmp timer,5
-
-    jge label2      ; If 10 seconds have passed, display the message
-    jmp taketimeE2
-
-ret
-getwinner endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;powerups section
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;first in statusbar
-drawIncresespeed proc
-lea si,increseimg ;left di for power ups 46120-----------right 46328
-mov di,46120
-MOV DX,20
-
-    REPEATincrese2:
-    MOV CX,20
-REP MOVSB
-ADD DI,300
-DEC DX
-JNZ REPEATincrese2
-
-ret
-drawIncresespeed endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-drawcreateob proc
-lea si,createob ;left di for power ups 46120-----------right 46328
-mov di,48888
-MOV DX,20
-
-    REPEATob2:
-    MOV CX,20
-REP MOVSB
-ADD DI,300
-DEC DX
-JNZ REPEATob2
-
-ret
-drawcreateob endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-drawflyobstacle proc
-lea si,flyob ;left di for power ups 46120-----------right 46328 update ll 48680  rr 48888
-mov di,48888
-MOV DX,20
-
-    REPEATfly2:
-    MOV CX,20
-REP MOVSB
-ADD DI,300
-DEC DX
-JNZ REPEATfly2
-ret
-drawflyobstacle endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-drawdecresesofanother proc
-lea si,decreseimg; left di for power ups 46120-----------right 46328
-mov di,46328
-MOV DX,24
-
-    REPEATincrese:
-    MOV CX,20
-REP MOVSB
-ADD DI,300
-DEC DX
-JNZ REPEATincrese
-
-ret
-drawdecresesofanother endp 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; clearscreen of obstacle
-Noobstacleleft proc
-mov aX, 0600h ;bacground
-      mov bh, 05h
-      mov cx, 1305h
-      mov dx, 1407h       
-      int 10h 
-      ret
-Noobstacleleft endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-NoobstacleRight proc
-mov aX, 0600h ;bacground
-      mov bh, 05h
-      mov cx, 131fh
-      mov dx, 1421h       
-      int 10h 
-      ret
-NoobstacleRight endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; timer for game
-displayInitialTime proc  
-mov ah,2
-mov bh,0
-mov dl,15
-mov dh,19
-int 10h
-mov ah,9
-mov dx,offset BeginingTime
-int 21h 
-ret
-displayInitialTime endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;for status
-changeTimer proc
-mov ah, 2ch
-    int 21h
-    mov prevsec, dh
-
-taketimeE3:
-mov bl,cursec
-mov prevsec,bl
-    mov ah, 2ch
-    int 21h
-    mov cursec, dh
-    mov bh,prevsec
-    ;sub cursec, bl ; Calculate the difference in seconds
-    cmp cursec, bh 
-    je taketimeE3
-    mov al,secondss
-    ;call printseconds
-    dec secondss
-    inc timer      ; Check if 10 seconds have passed
-    cmp timer,60
-
-    jge endofgame23        ; If 10 seconds have passed, display the message
-    jmp taketimeE3
-endofgame23:
-mov aX, 0600h ;bacground
-      mov bh, 03h
-      mov cx, 0603h
-      mov dx, 1324h       
-      int 10h 
-
-    MOV AH,02  
-    MOV BH,00  ;page    
-    MOV DL,16 ;column  
-    MOV DH,8  ;row 
-    INT 10H 
-
-    mov ah,9
-
-        mov dx,offset winningmsg
-    int 21h
-    ;;;;;;;;;;;;;;;;;;;;;;
-    MOV AH,02  
-    MOV BH,00  ;page    
-    MOV DL,4 ;column  
-    MOV DH,8  ;row 
-    INT 10H 
-    ;;;;;;;
-    mov ah,9
-
-        mov dx,offset firstPlayerName+2
-    int 21h
-ret
-changeTimer endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;obstacles in track
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;fly for 222222
-drawflyinten proc
-;mov di,4824
-mov si,offset flyinten
-MOV DX,10
-flyu:
-MOV CX,10
-REP MOVSB
-ADD DI,310
-DEC DX
-JNZ flyu
-ret
-drawflyinten endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; bomb for 4444444444
-drawbomb proc
-;mov di,8644
-mov si,offset bomb
-MOV DX,10
-bomb8:
-MOV CX,10
-REP MOVSB
-ADD DI,310
-DEC DX
-JNZ bomb8
-ret
-drawbomb endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; fire for 11111111111111111
-drawfire proc
-;mov di,8664
-mov si,offset fire
-MOV DX,10
-fire8:
-MOV CX,10
-REP MOVSB
-ADD DI,310
-DEC DX
-JNZ fire8
-ret
-drawfire endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; decrese enemy for 333333333333333333
-drawbeatme proc
-;mov di,12484
-mov si,offset beatme
-MOV DX,10
-beatme8:
-MOV CX,10
-REP MOVSB
-ADD DI,310
-DEC DX
-JNZ beatme8
-ret
-drawbeatme endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; randoization of power
-randompower proc
- mov ah, 2ch
- int 21h    
-tracktime:    
-    mov randomNum,dl;    
-    mov ah,0
-    mov al,randomNum
-    mov bl,4;
-    div bl;sub cursec, bl ; Calculate the difference in seconds
-    mov reminder4,ah;    
-    mov bl,2
-    mov ah,0
-    mov al,randomNum
-    div bl;;sub cursec, bl ; Calculate the difference in seconds
-    mov reminder2,ah;     
-    cmp reminder2,0;
-    je car1
-    mov bh,reminder4
-    mov car2power,bh;sub cursec, bl ; Calculate the difference in seconds
-    ret
-    car1:
-    mov bh,reminder4
-    mov car1power,bh;
-    ret
-randompower endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-choosewhichTorender proc
-cmp car1power,0
-je dontcare
-mov bx,pos_box1
-mov newcar1,bx
-add newcar1,powerbegin
-mov di,newcar1
-mov al,[di]
-cmp al,8
-jnz checkendp ;
-mov car1power,0
-ret
-checkendp:
-mov bx,pos_box1
-mov newcar1,bx
-add newcar1,powerend
-mov di,newcar1
-mov al,[di]
-cmp al,8
-jnz finallycan ;
-mov car1power,0
-ret
-finallycan:
-mov bx,pos_box1
-mov newcar1,bx
-add newcar1,powerbegin
-mov di,newcar1
-cmp car1power,4
-je bombp
-cmp car1power,3
-je decrp
-cmp car1power,2
-je flyp
-cmp car1power,1
-je firep
-bombp:
-mov car1power,0
-call drawbomb
-ret
-decrp:
-mov car1power,0
-call drawbeatme
-ret
-firep:
-mov car1power,0
-call drawfire
-ret
-flyp:
-mov car1power,0
-call drawflyinten
-ret
-dontcare:
-cmp car2power,0
-jne another
-mov car2power,0
-ret
-another:
-mov bx,pos_box2
-mov newcar2,bx
-add newcar2,powerbegin
-mov di,newcar2
-mov al,[di]
-cmp al,8
-jnz checkendp2 ;
-mov car2power,0
-ret
-checkendp2:
-mov bx,pos_box2
-mov newcar2,bx
-add newcar2,powerend
-mov di,newcar2
-mov al,[di]
-cmp al,8
-jnz finallycan2 ;
-mov car2power,0
-ret
-finallycan2:
-mov bx,pos_box2
-mov newcar2,bx
-add newcar2,powerbegin
-mov di,newcar2
-cmp car2power,4
-je bombp2
-cmp car2power,3
-je decrp2
-cmp car2power,2
-je flyp2
-cmp car2power,1
-je firep2
-bombp2:
-mov car2power,0
-call drawbomb
-ret
-decrp2:
-mov car2power,0
-call drawbeatme
-ret
-firep2:
-mov car2power,0
-call drawfire
-ret
-flyp2:
-mov car2power,0
-call drawflyinten
-ret
-choosewhichTorender endp 
 
 
-
+end main

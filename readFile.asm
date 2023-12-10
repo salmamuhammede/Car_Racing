@@ -2,17 +2,17 @@
 
 ;---------------------------------------
 .MODEL SMALL
-.STACK 32
+.STACK 64
 
 ;---------------------------------------
 .DATA
 
-filename db 'a.bin', 0
-buffer_size equ 128*120
+filename db 'de2.bin', 0
+buffer_size equ 320*200
 buffer db buffer_size dup(?)
 errtext db "Error", 10, "$"
-IMAGE_HEIGHT equ 120
-IMAGE_WIDTH equ 128
+IMAGE_HEIGHT equ 200
+IMAGE_WIDTH equ 320
 SCREEN_WIDTH equ 320
 SCREEN_HEIGHT equ 200
 ;---------------------------------------
@@ -42,7 +42,7 @@ MAIN PROC FAR
     mov ah, 3Eh         ; DOS function: close file
     INT 21H
 
-    MOV DI,320/2 - IMAGE_WIDTH/2 ;STARTING PIXEL
+    MOV DI,0 ;STARTING PIXEL
     CALL drawImage
 
     MOV AH, 0
@@ -83,7 +83,7 @@ drawImage PROC
     
     MOV DX,IMAGE_HEIGHT
 
-    REPEAT:
+    REPEAT2:
     MOV CX,IMAGE_WIDTH
     DRAW_PIXELS:
         ; Check if the byte at [SI] is 0
@@ -106,7 +106,7 @@ drawImage PROC
 
     ADD DI,SCREEN_WIDTH - IMAGE_WIDTH
     DEC DX
-    JNZ REPEAT
+    JNZ REPEAT2
 
     RET
 
