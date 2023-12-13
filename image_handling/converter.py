@@ -283,7 +283,7 @@ while(True):
     Converted = []
 
     for pixel in pixels:
-        if pixel[3] == 0:
+        if pixel[2] == 0:
             Converted.append(250)
         elif pixel[:-1] in D.keys():
             Converted.append(D[pixel[:-1]])
