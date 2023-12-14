@@ -1,21 +1,20 @@
 game proc far
-;;;;;;;;;;;;;;;;;;
- mov ah,0    
-     mov al,13h  ;GRAPHICS
-     INT 10H  
+mov ah,0    
+    mov al,13h  ;GRAPHICS
+    INT 10H  
      
       mov aX, 0600h ;bacground
-      mov bh, 00h
-      mov cx, 0000h
-      mov dx, 184Fh       
-      int 10h 
-      MOV DI,6420 ;STARTING PIXEL
+     mov bh, 00h
+    mov cx, 0000h
+    mov dx, 184Fh       
+    int 10h 
+    MOV DI,6420 ;STARTING PIXEL
       ;;;;;;;;;;;;;;;;;
 
-        MOV AX,0A000h
+       MOV AX,0A000h
     MOV ES,AX
 
-    MOV SI,offset beginPage
+    MOV SI,offset beginpage
     
     MOV DX,160
 
@@ -24,7 +23,7 @@ game proc far
     REP MOVSB
     ADD DI,320-280
     DEC DX
-    JNZ REPEATt
+    JNZ REPEATt 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;done
     lm:
     mov ah,0
@@ -3474,29 +3473,12 @@ mov dx,0A000h
 mov es,dx
 cmp car1power,4
 je dontcare
-mov bx,pos_box1
-mov newcar1,bx
-add newcar1,powerbegin
-mov di,newcar1
-lea si,floor
-cmpsb
-jz checkendp ;
-mov car1power,4
-ret
-checkendp:
-mov bx,pos_box1
-mov newcar1,bx
-add newcar1,powerend
-mov di,newcar1
-lea si,floor
-cmpsb
-jz finallycan ;
-mov car1power,4
+call checkavailblecar1
+cmp canpower,1
+jz finallycan 
 ret
 finallycan:
-mov bx,pos_box1
-mov newcar1,bx
-add newcar1,powerbegin
+mov canpower,0
 mov di,newcar1
 mov prevdicar1,di
 cmp car1power,0
@@ -3529,29 +3511,12 @@ jne another
 mov car2power,4
 ret
 another:
-mov bx,pos_box2
-mov newcar2,bx
-add newcar2,powerbegin
-mov di,newcar2
-lea si,floor
-cmpsb
-jz checkendp2 ;
-mov car2power,4
-ret
-checkendp2:
-mov bx,pos_box2
-mov newcar2,bx
-add newcar2,powerend
-mov di,newcar2
-lea si,floor
-cmpsb
-jz finallycan2 ;
-mov car2power,4
+call checkavailblecar2
+cmp canpower,1
+jz finallycan2
 ret
 finallycan2:
-mov bx,pos_box2
-mov newcar2,bx
-add newcar2,powerbegin
+mov canpower,0
 mov di,newcar2
 mov prevdicar2,di
 cmp car2power,0
@@ -3789,32 +3754,260 @@ inc powerupcar2timer
 shofsecond2:
 ret
 checkforboth endp
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  checkavailblecar1 proc
- cmp car1power,0
- je handlezero
- cmp car1power,1
- je handleone
- cmp car1power,2
- je handletwo
- cmp car1power,3
- je handlethree
- handlezero:
  mov bx,pos_box1
- mov newcar1,bx
- sub newcar1,upzero
-jg cant
-mov si,offset floor 
-mov di,newcar1
-cmpsb
-jnz cant
-mov newcar1,bx
- sub newcar1,upone
-jg cant
-mov si,offset floor 
-mov di,newcar1
-cmpsb
-
- cant:
- mov cantflagcar1,0
+ mov di,bx 
+ sub di,k
+ lea si,floor
+ mov dx,pixel_size
+ beginup:
+  mov cx,pixel_size
+                tryup:
+                            cmpsb
+                            jnz generaltrydown
+                            dec si                            
+                            dec cx
+                            jnz tryup
+                            lea si,floor
+                            dec di
+                            sub di,330
+                            dec dx
+                            jnz beginup
+                            mov currentpoerdirection,0
+                            jmp cancreateup
+                            ;;;;;;;;;;;;;;;;;;;;;;;;;;;downpower
+                            generaltrydown:
+                            mov dx,pixel_size
+                            mov bx,pos_box1
+                            lea si,floor
+                            mov di,bx
+                            add di,3520
+                            begindown:
+                            mov cx,pixel_size
+                            trydown:
+                            cmpsb
+                            jnz generaltryleft
+                            dec si                            
+                            dec cx
+                            jnz trydown
+                            dec di
+                            lea si,floor
+                            add di,310
+                            dec dx
+                            jnz begindown
+                            mov currentpoerdirection,2
+                            jmp cancreateup
+                            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;powerleft
+                            generaltryleft:
+                            lea si,floor
+                            mov dx,pixel_size
+                             mov bx,pos_box1
+                            mov di,bx
+                            dec di
+                            beginleft:
+                            mov cx,pixel_size
+                            tryleft:
+                            cmpsb
+                            jnz generaltryright
+                            dec si
+                            dec di
+                            add di,k
+                            dec cx
+                            jnz tryleft
+                            lea si,floor
+                            dec di
+                            sub di,3200
+                            dec dx
+                            jnz beginleft
+                             mov currentpoerdirection,3
+                            jmp cancreateup
+                            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;powerright
+                              generaltryright:
+                             lea si,floor
+                             mov dx,pixel_size
+                             mov bx,pos_box1
+                            mov di,bx
+                            add di,11
+                            beginright:
+                            mov cx,pixel_size
+                            tryright:
+                            cmpsb
+                            jnz cantcreate
+                            dec si
+                            dec di
+                            add di,k
+                            dec cx
+                            jnz tryright
+                            lea si,floor                         
+                            sub di,3200
+                            inc di
+                            dec dx
+                            jnz beginright
+                             mov currentpoerdirection,1
+                            jmp cancreateup
+                            cancreateup:
+                            cmp currentpoerdirection,0
+                            jnz setdown
+                            mov bx,pos_box1
+                            mov newcar1,bx
+                            sub newcar1,canup
+                            jmp endsetting
+                            setdown:
+                            cmp currentpoerdirection,2
+                            jnz setleft
+                             mov bx,pos_box1
+                            mov newcar1,bx
+                            add newcar1,canup
+                            jmp endsetting
+                            setleft:
+                             cmp currentpoerdirection,3
+                            jnz setright
+                              mov bx,pos_box1
+                            mov newcar1,bx
+                            sub newcar1,canleft
+                            jmp endsetting
+                            setright:
+                            cmp currentpoerdirection,1
+                            jnz cantcreate
+                              mov bx,pos_box1
+                            mov newcar1,bx
+                            add newcar1,canleft
+                            jmp endsetting
+                            endsetting:
+                            mov canpower,1
+                            ret
+                            cantcreate:
+                            mov canpower,0
+                            mov currentpoerdirection,4
+                            ret          
  checkavailblecar1 endp
-
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+checkavailblecar2 proc
+  mov bx,pos_box2
+ mov di,bx 
+ sub di,k
+ lea si,floor
+ mov dx,pixel_size
+ beginup2:
+  mov cx,pixel_size
+                tryup2:
+                            cmpsb
+                            jnz generaltrydown2
+                            dec si                            
+                            dec cx
+                            jnz tryup2
+                            lea si,floor
+                            dec di
+                            sub di,330
+                            dec dx
+                            jnz beginup2
+                            mov currentpoerdirection,0
+                            jmp cancreateup2
+                            ;;;;;;;;;;;;;;;;;;;;;;;;;;;downpower
+                            generaltrydown2:
+                            mov dx,pixel_size
+                            mov bx,pos_box1
+                            lea si,floor
+                            mov di,bx
+                            add di,3520
+                            begindown2:
+                            mov cx,pixel_size
+                            trydown2:
+                            cmpsb
+                            jnz generaltryleft2
+                            dec si                            
+                            dec cx
+                            jnz trydown2
+                            dec di
+                            lea si,floor
+                            add di,310
+                            dec dx
+                            jnz begindown2
+                            mov currentpoerdirection,2
+                            jmp cancreateup2
+                            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;powerleft
+                            generaltryleft2:
+                            lea si,floor
+                            mov dx,pixel_size
+                             mov bx,pos_box1
+                            mov di,bx
+                            dec di
+                            beginleft2:
+                            mov cx,pixel_size
+                            tryleft2:
+                            cmpsb
+                            jnz generaltryright2
+                            dec si
+                            dec di
+                            add di,k
+                            dec cx
+                            jnz tryleft2
+                            lea si,floor
+                            dec di
+                            sub di,3200
+                            dec dx
+                            jnz beginleft2
+                             mov currentpoerdirection,3
+                            jmp cancreateup2
+                            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;powerright
+                            generaltryright2:
+                             lea si,floor
+                             mov dx,pixel_size
+                             mov bx,pos_box2
+                            mov di,bx
+                            add di,11
+                            beginright2:
+                            mov cx,pixel_size
+                            tryright2:
+                            cmpsb
+                            jnz cantcreate2
+                            dec si
+                            dec di
+                            add di,k
+                            dec cx
+                            jnz tryright2
+                            lea si,floor                         
+                            sub di,3200
+                            inc di
+                            dec dx
+                            jnz beginright2
+                             mov currentpoerdirection,1
+                            jmp cancreateup2
+                            cancreateup2:
+                            cmp currentpoerdirection,0
+                            jnz setdown2
+                            mov bx,pos_box2
+                            mov newcar2,bx
+                            sub newcar2,canup
+                            jmp endsetting2
+                            setdown2:
+                            cmp currentpoerdirection,2
+                            jnz setleft2
+                             mov bx,pos_box2
+                            mov newcar2,bx
+                            add newcar2,canup
+                            jmp endsetting2
+                            setleft2:
+                             cmp currentpoerdirection,3
+                            jnz setright2
+                              mov bx,pos_box2
+                            mov newcar2,bx
+                            sub newcar2,canleft
+                            jmp endsetting2
+                            setright2:
+                            cmp currentpoerdirection,1
+                            jnz cantcreate2
+                              mov bx,pos_box2
+                            mov newcar2,bx
+                            add newcar2,canleft
+                            jmp endsetting2
+                            endsetting2:
+                            mov canpower,1
+                            ret
+                            cantcreate2:
+                            mov canpower,0
+                            mov currentpoerdirection,4
+                            ret            
+ checkavailblecar2 endp
+ 

@@ -7,7 +7,7 @@
 ;---------------------------------------
 .DATA
 
-filename db 'de2.bin', 0
+filename db 'm.bin', 0
 buffer_size equ 320*200
 buffer db buffer_size dup(?)
 errtext db "Error", 10, "$"
@@ -113,4 +113,30 @@ drawImage PROC
 drawImage ENDP
 
      END MAIN
+
+     ;mov ah,0    
+  ;   mov al,13h  ;GRAPHICS
+   ;  INT 10H  
+     
+    ;  mov aX, 0600h ;bacground
+     ; mov bh, 00h
+      ;mov cx, 0000h
+      ;mov dx, 184Fh       
+      ;int 10h 
+      ;MOV DI,6420 ;STARTING PIXEL
+      ;;;;;;;;;;;;;;;;;
+
+       ; MOV AX,0A000h
+    MOV ES,AX
+
+    MOV SI,offset beginPage
+    
+    MOV DX,160
+
+    REPEATt:
+    MOV CX,280
+    REP MOVSB
+    ADD DI,320-280
+    DEC DX
+    JNZ REPEATt
 

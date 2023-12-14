@@ -1,12 +1,12 @@
 .286
 extern background:far
 extern info:far
-public beginPage ,initialpmsg,Player1msg,interruptmsg,choicePhasemsg,startChatMsg,sppoints,firstPlayerName,secondPlayerName,fppoints,startgameemsg
+public initialpmsg,Player1msg,interruptmsg,choicePhasemsg,startChatMsg,sppoints,firstPlayerName,secondPlayerName,fppoints,startgameemsg
 public endmsg,startChatMsg,leftcaringame,rightcar
 .MODEL huge
 .Stack 64
 .Data
-beginPage DB 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59
+beginpage DB 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59
  DB 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59
  DB 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59
  DB 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59, 59
@@ -1519,10 +1519,10 @@ bomb  db 100 dup(122)
 fire  db 100 dup(16)
 beatme db 100 dup(53)
 floorpic DB 100 dup (8)
-beginPage_WIDTH EQU 200
-beginPage_HEIGHT equ 148
-SCREEN_HEIGHT EQU 200
-SCREEN_WIDTH EQU  320
+IMAGE_HEIGHT equ 200
+IMAGE_WIDTH equ 320
+SCREEN_WIDTH equ 320
+SCREEN_HEIGHT equ 200
 Player1msg db 'Please Enter your Name (max 15 characters): ','$'
 interruptmsg db 'Second player turn','$'
 initialpmsg db 'Initial points max is 9 ','$'
@@ -1619,11 +1619,12 @@ car2power db 4
 ;powerupbegin4 equ 13
 ;powerupend4 equ 3223
 ;powerupend3 equ 3197
-upzero equ 3840
-upone equ 3850
-uptwo equ 640
-upthree equ 650
+canup equ 3520
+candown equ 3520
+canleft equ 11
+canright equ 11
 cantflagcar1 db 0
+currentpoerdirection db 4
 ;;;;;;;;;;;;;;;
 newcar1 dw ?
 newcar2 dw ?
@@ -1640,18 +1641,13 @@ firefloor db 16
 bombfloor db 122
 currentpowerforCar1 db 4
 currentpowerforCar2 db 4
-
-prevdicar1 dw 0; draw horizontal line
+prevdicar1 dw 0; 
 prevdicar2 dw 0
 powerupcar1timer db 0
 powerupcar2timer db 0
-
-
-
+;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 .Code
 ;include begin.inc
 ;include welcome.inc
