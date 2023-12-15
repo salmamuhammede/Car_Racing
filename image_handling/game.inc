@@ -1,28 +1,42 @@
 game proc far
-    mov ah,0    
+mov ah,0    
     mov al,13h  ;GRAPHICS
-    INT 10H       
-    mov aX, 0600h ;bacground
-    mov bh, 00h
+    INT 10H  
+     
+      mov aX, 0600h ;bacground
+     mov bh, 00h
     mov cx, 0000h
     mov dx, 184Fh       
     int 10h 
     MOV DI,6420 ;STARTING PIXEL
-    ;;;;;;;;;;;;;;;;;
-    MOV AX,0A000h
+      ;;;;;;;;;;;;;;;;;
+
+       MOV AX,0A000h
     MOV ES,AX
-    call drawbeginpage    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;done
-lm:
+
+    MOV SI,offset beginpage
+    
+    MOV DX,160
+
+    REPEATt:
+    MOV CX,280
+    REP MOVSB
+    ADD DI,320-280
+    DEC DX
+    JNZ REPEATt 
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;done
+    lm:
     mov ah,0
     int 16h  
     mov bl,28
     cmp ah, bl
     jz label2
     jnz lm
-  label2:
+label2:
 mov ah,00h 
 mov al,03h 
 int 10h
+
 mov ax,0600h
 mov bh,5eh  ;fore yellow/back blue 
 mov cx,0 ;start
@@ -34,6 +48,7 @@ mov bh,0
 mov dl,1
 mov dh,1
 int 10h
+
 ;printMsg EnterPlayer1msg
 mov ah,9
 mov dx,offset Player1msg
@@ -44,16 +59,32 @@ mov bh,0
 mov dl,1;take name
 mov dh,2
 int 10h
+
 mov ah,0AH 
 mov dx,offset firstPlayerName
 int 21h
 lea si, firstPlayerName+2
-;;;;;;;;;;
+;cmp [si],
+;;;;;;;;;;;
+mov ah,2;take initial points for player1
+mov bh,0
+mov dl,1
+mov dh,8
+int 10h
+mov ah,9
+mov dx,offset initialpmsg
+int 21h   
+ ;;;;;;;;;;;;;;;;;;; store it
+mov ah, 1 
+INT 21H 
+mov fppoints,al 
+;;;;;;;;;;;;;;;;;;;;;
 mov ah,2
 mov bh,0
 mov dl,1; second player turn
 mov dh,12
 int 10h 
+
 mov ah,9
 mov dx,offset interruptmsg
 int 21h  
@@ -77,6 +108,19 @@ mov ah,0AH
 mov dx,offset secondPlayerName
 int 21h
 
+mov ah,2
+mov bh,0
+mov dl,1
+mov dh,20
+int 10h
+
+mov ah,9
+mov dx,offset initialpmsg
+int 21h   
+  
+mov ah, 1 
+INT 21H 
+mov sppoints,al 
 mov ah,2
 mov bh,0
 mov dl,1
@@ -146,9 +190,9 @@ MOV AH,4CH
 INT 21H
 continue:
 ;;;;;;;;;;;;;;;;;;;;;
-     MOV AX,0A000h
-     MOV ES,AX
-     mov ah,0    
+MOV AX,0A000h
+   MOV ES,AX
+ mov ah,0    
      mov al,13h  ;GRAPHICS
      INT 10H  
      
@@ -164,8 +208,10 @@ continue:
       mov cx, 1200h
       mov dx, 154fh       
       int 10h 
-      ;;;;;;;;;;;      
-      call displayInitialTime      
+      ;;;;;;;;;;;
+      
+      call displayInitialTime
+      
       ;;;;;;;;;;;;;;;;
         MOV AH,0CH
         MOV AL,14 
@@ -177,34 +223,60 @@ continue:
      cmp cx,320
      jnz here   
      ;;;;;;;;;;;;;;;;;;;;;;;
-    MOV AH,02  
+     MOV AH,02  
     MOV BH,00  ;page    
     MOV DL,0  ;column  
     MOV DH,23  ;row 
     INT 10H 
+
     mov ah,9
-    mov dx,offset startChatMsg
+
+        mov dx,offset startChatMsg
     int 21h
-    mov DI,46720
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;z&z
-    call drawleftcarinstatus
+      mov DI,46720
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;z&z
+     
+    MOV SI,offset leftcaringame
+    
+    MOV DX,20
+
+    REPEAT3:
+    MOV CX,33
+REP MOVSB
+ADD DI,SCREEN_WIDTH-33
+DEC DX
+JNZ REPEAT3
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 mov Di ,46675
-call drawrightcarinstatus
+MOV SI,offset rightcar
+  MOV DX,20
+    REPEAT2:
+    MOV CX,37
+REP MOVSB
+ADD DI,SCREEN_WIDTH-37
+DEC DX
+JNZ REPEAT2
+
+
         mov pos_box1, 321
-        mov pos_box2, 333        
-        call drawTrack       
-        call initialize_cars
-        call randompoweratbegining
+        mov pos_box2, 333
+    
         
-        call set_interrupt        
+        call drawTrack
+        call initialize_cars
+        call set_interrupt
+        ;;;;;;;;;;;;;;play
         call play
-        call ret_interrupt         
-        ret
+        call ret_interrupt    
+        
+  ;call getwinner
+  
+      ret
 game endp
 
 ; ------------------------- Draw Cars ----------------------------------------- ;
 set_interrupt proc
+            
             push ax
             push es
             push bx
@@ -1129,10 +1201,9 @@ play            proc
                         jz callpowers 
                         jmp check_move
                         callpowers:
-                            mov powerupflag,0
                             call randompower
                             call choosewhichTorender
-                           
+                            mov powerupflag,0
                         jmp check_move
                         endr:
                         pop ax
@@ -1323,6 +1394,7 @@ freeze_2 proc
         pop cx
         ret
 freeze_2 endp
+;---------------------------------------------------;
 activate_powers proc
                 push di
                 cmp di,pos_box1 ; check if it is the first car
@@ -1336,10 +1408,8 @@ activate_powers proc
                             cmp currentpowerforCar1,1
                             jnz try1 
                             call speedup1
-                            mov di,statuspowerleft
-call Noobstacleleft
-mov currentpowerforCar1,4
-mov powerupcar1timer,0                            
+                            mov currentpowerforCar1,4
+                            mov powerupcar1timer,0
                             mov currentpoweractivatedrforCar1,1
                             jmp endpowers
                             try1: ; three decrease other car speed ; 
@@ -1348,10 +1418,8 @@ mov powerupcar1timer,0
                             mov di,pos_box2
                             mov currentpoweractivatedrforCar1,3
                             call speeddown1
-                           mov di,statuspowerleft
-call Noobstacleleft
-mov currentpowerforCar1,4
-mov powerupcar1timer,0
+                            mov currentpowerforCar1,4
+                            mov powerupcar1timer,0
                             jmp endpowers
                 activatefor2:
                             cmp currentpowerforCar2, 4
@@ -1363,10 +1431,8 @@ mov powerupcar1timer,0
                             jnz try11
                             mov currentpoweractivatedrforCar2,1
                             call speedup1
-                            mov di,statuspowerright
-call Noobstacleleft
-mov currentpowerforCar2,4
-mov powerupcar2timer,0
+                            mov currentpowerforCar2,4
+                            mov powerupcar2timer,0
                             jmp endpowers
                             try11:
                             cmp currentpowerforCar2, 3
@@ -1374,10 +1440,8 @@ mov powerupcar2timer,0
                             mov di,pos_box1
                             mov currentpoweractivatedrforCar2,3
                             call speeddown1
-                            mov di,statuspowerright
-call Noobstacleleft
-mov currentpowerforCar2,4
-mov powerupcar2timer,0
+                            mov currentpowerforCar2,4
+                            mov powerupcar2timer,0
                             jmp endpowers
                 nochange1:
                     mov currentpowerforCar1, 4
@@ -2985,15 +3049,12 @@ RandObst proc far
 RandObst endp
 
 ;;;;;;;;;;;;;;;;;;;;;; Daowd 2 new procs
-
-;;;;;;;;;;;;;;;;;;;;;; Daowd 2 new procs
 starttime proc
    mov ah, 2ch
    int 21h
    mov prevsec, dh
    ret
 starttime endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;initilize time
 ; set current second ;
 setcurrentsec proc
                 push dx
@@ -3004,7 +3065,7 @@ setcurrentsec proc
                 pop dx
                 ret
 setcurrentsec endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;initilize time
 markend proc 
 push ax
 push bx
@@ -3015,9 +3076,7 @@ push di
     je nochange
     inc timer      ; Check if 10 seconds have passed
     inc poweruptimer
-    call displayInitialTime
-    ;;;;;;;;;;;;ziad
-        ; First power up timer ;
+    ; First power up timer ;
     cmp powerc1activated,1 ; if a power is currently activated
     jnz completerest ; not activated
     inc time_powerc1 ; else increment time in use
@@ -3034,17 +3093,13 @@ push di
     jnz completerest2 ; else complete
     mov di,pos_box2  ; car 2 
     call releasepowerups ; function that release power ups activated
-    completerest2: 
-    ;;;;;;;;;;;;;;;;;
-    call checkforboth
-    cmp poweruptimer,timediplaypower
-    
-    
+    completerest2:
+    cmp poweruptimer,10
     jnz rest
     mov powerupflag,1
     mov  poweruptimer,0  
     rest:
-    cmp timer, 10
+    cmp timer, 120
     jnz updateparams
     mov flag,1
     updateparams:
@@ -3099,22 +3154,89 @@ mov aX, 0600h ;bacground
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;score1    
     ;;;;;;;;;;;;;;;;;;;;;;;;;monkey photo
    
-mov di ,25728
-call drawcrying
+    lea si,gameoverpic
+    mov di,25728
+     MOV DX,73
+
+    REPEAT4:
+    MOV CX,80
+REP MOVSB
+ADD DI,SCREEN_WIDTH-80
+DEC DX
+JNZ REPEAT4
 ;;;;;;;;;;;;;;;;;;; bluecar over
-mov di,25632
-call drawleftinwinning 
-mov di,25828
-call drawrightinwinng
+lea si,blueover
+ mov di,25632
+     MOV DX,30
+
+    REPEAT5:
+    MOV CX,50
+REP MOVSB
+ADD DI,SCREEN_WIDTH-50
+DEC DX
+JNZ REPEAT5
+;;;;;;;;;;;;;;;;; redcarin over
+lea si,redover
+ mov di,25828
+     MOV DX,30
+
+    REPEAT6:
+    MOV CX,55
+REP MOVSB
+ADD DI,SCREEN_WIDTH-55
+DEC DX
+JNZ REPEAT6
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; return to main
-call afterend
+mov timer,0
+ mov ah, 2ch
+    int 21h
+    mov prevsec, dh
+
+taketime2:
+mov bl,cursec
+mov prevsec,bl
+    mov ah, 2ch
+    int 21h
+    mov cursec, dh
+    mov bh,prevsec
+    ;sub cursec, bl ; Calculate the difference in seconds
+    cmp cursec, bh 
+    je taketime2
+    inc timer2      ; Check if 10 seconds have passed
+    cmp timer2,5
+
+    jge returnz      ; If 10 seconds have passed, display the message
+    jmp taketime2
+    returnz:
+     mov ah,00h 
+mov al,03h 
+int 10h
+jmp lopp
 
 ret
 timeover endp
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;winerrrrrrrrrrrrrrrrrrr
 getwinner proc 
-    
+    mov ah, 2ch
+    int 21h
+    mov prevsec, dh
+taketimeE:
+mov bl,cursec
+mov prevsec,bl
+    mov ah, 2ch
+    int 21h
+    mov cursec, dh
+    mov bh,prevsec
+    ;sub cursec, bl ; Calculate the difference in seconds
+    cmp cursec, bh 
+    je taketimeE
+    inc timer      ; Check if 10 seconds have passed
+    cmp timer,10
+
+    jge endofgame2        ; If 10 seconds have passed, display the message
+    jmp taketimeE
+endofgame2:
 mov aX, 0600h ;bacground
       mov bh, 03h
       mov cx, 0603h
@@ -3170,30 +3292,79 @@ mov aX, 0600h ;bacground
     mov ah,9
     int 21h;
      ;;;;;;;;;;;;;;;;;;;;;;;;;monkey photo
-     
+   
+    lea si,celebratemonkey
     mov di,25728
-    
+     MOV DX,60
+    REPEATT4:
+    MOV CX,45
+REP MOVSB
+ADD DI,SCREEN_WIDTH-45
+DEC DX
+JNZ REPEATT4
 ;;;;;;;;;;;;;;;;;;; bluecar over
+lea si,blueover
  mov di,25632
-call drawleftinwinning 
-mov di,25828
-call drawrightinwinng
+     MOV DX,30
+
+    REPEATT5:
+    MOV CX,50
+REP MOVSB
+ADD DI,SCREEN_WIDTH-50
+DEC DX
+JNZ REPEATT5
+;;;;;;;;;;;;;;;;; redcarin over
+lea si,redover
+ mov di,25828
+     MOV DX,30
+
+    REPEATT6:
+    MOV CX,55
+REP MOVSB
+ADD DI,SCREEN_WIDTH-55
+DEC DX
+JNZ REPEATT6
+ret
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; return to main
-mov di,25728
-call drawcelebrate
-call afterend
+mov timer,0
+ mov ah, 2ch
+    int 21h
+    mov prevsec, dh
+
+taketimeE2:
+mov bl,cursec
+mov prevsec,bl
+    mov ah, 2ch
+    int 21h
+    mov cursec, dh
+    mov bh,prevsec
+    ;sub cursec, bl ; Calculate the difference in seconds
+    cmp cursec, bh 
+    je taketimeE2
+    inc timer      ; Check if 10 seconds have passed
+    cmp timer,5
+
+    jge returnn     ; If 10 seconds have passed, display the message
+    jmp taketimeE2
+    returnn:
+    mov ah,00h 
+mov al,03h 
+int 10h
+jmp lopp
+
+ret
 getwinner endp
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;powerups section
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;first in statusbar
 drawIncresespeed proc
 lea si,increseimg ;left di for power ups 46120-----------right 46328
 ;mov di,46120
-MOV DX,aggreedsizefrostausbar
+MOV DX,20
 
     REPEATincrese2:
-    MOV CX,aggreedsizefrostausbar
+    MOV CX,20
 REP MOVSB
-ADD DI,320-aggreedsizefrostausbar
+ADD DI,300
 DEC DX
 JNZ REPEATincrese2
 
@@ -3203,12 +3374,12 @@ drawIncresespeed endp
 drawcreateob proc
 lea si,createob ;left di for power ups 46120-----------right 46328
 ;mov di,48888
-MOV DX,aggreedsizefrostausbar
+MOV DX,20
 
     REPEATob2:
-    MOV CX,aggreedsizefrostausbar
+    MOV CX,20
 REP MOVSB
-ADD DI,320-aggreedsizefrostausbar
+ADD DI,300
 DEC DX
 JNZ REPEATob2
 
@@ -3218,12 +3389,12 @@ drawcreateob endp
 drawflyobstacle proc
 lea si,flyob ;left di for power ups 46120-----------right 46328 update ll 48680  rr 48888
 ;mov di,48888
-MOV DX,aggreedsizefrostausbar
+MOV DX,20
 
     REPEATfly2:
-    MOV CX,aggreedsizefrostausbar
+    MOV CX,20
 REP MOVSB
-ADD DI,320-aggreedsizefrostausbar
+ADD DI,300
 DEC DX
 JNZ REPEATfly2
 ret
@@ -3232,12 +3403,12 @@ drawflyobstacle endp
 drawdecresesofanother proc
 lea si,decreseimg; left di for power ups 46120-----------right 46328
 ;mov di,46328
-MOV DX,aggreedsizefrostausbar
+MOV DX,20
 
     REPEATincrese:
-    MOV CX,aggreedsizefrostausbar
+    MOV CX,20
 REP MOVSB
-ADD DI,320-aggreedsizefrostausbar
+ADD DI,300
 DEC DX
 JNZ REPEATincrese
 
@@ -3245,13 +3416,19 @@ ret
 drawdecresesofanother endp 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; clearscreen of obstacle
 Noobstacleleft proc
+;mov aX, 0600h ;bacground
+ ;     mov bh, 09h
+  ;    mov cx, 1305h
+   ;   mov dx, 1407h       
+    ;  int 10h 
+    ;mov di,48,680
     mov si,offset clearfromstatus
-    MOV DX,aggreedsizefrostausbar
+    MOV DX,20
 
     clearstatus:
-    MOV CX,aggreedsizefrostausbar
+    MOV CX,20
 REP MOVSB
-ADD DI,320-aggreedsizefrostausbar
+ADD DI,300
 DEC DX
 JNZ clearstatus
       ret
@@ -3289,18 +3466,73 @@ add dl,30h
 mov ah,02h
 int 21h;
 dec secondss
+
 ret
 displayInitialTime endp
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;for status
+changeTimer proc
+mov ah, 2ch
+    int 21h
+    mov prevsec, dh
 
+taketimeE3:
+mov bl,cursec
+mov prevsec,bl
+    mov ah, 2ch
+    int 21h
+    mov cursec, dh
+    mov bh,prevsec
+    ;sub cursec, bl ; Calculate the difference in seconds
+    cmp cursec, bh 
+    je taketimeE3
+    mov al,secondsss
+    ;call printseconds
+    dec secondsss
+    inc timer      ; Check if 10 seconds have passed
+    cmp timer,60
+
+    jge endofgame23        ; If 10 seconds have passed, display the message
+    jmp taketimeE3
+endofgame23:
+mov aX, 0600h ;bacground
+      mov bh, 03h
+      mov cx, 0603h
+      mov dx, 1324h       
+      int 10h 
+
+    MOV AH,02  
+    MOV BH,00  ;page    
+    MOV DL,16 ;column  
+    MOV DH,8  ;row 
+    INT 10H 
+
+    mov ah,9
+
+        mov dx,offset winningmsg
+    int 21h
+    ;;;;;;;;;;;;;;;;;;;;;;
+    MOV AH,02  
+    MOV BH,00  ;page    
+    MOV DL,4 ;column  
+    MOV DH,8  ;row 
+    INT 10H 
+    ;;;;;;;
+    mov ah,9
+
+        mov dx,offset firstPlayerName+2
+    int 21h
+ret
+changeTimer endp
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;obstacles in track
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;fly for 222222
 drawflyinten proc
 ;mov di,4824
 mov si,offset flyinten
-MOV DX,aggreedsize
+MOV DX,10
 flyu:
-MOV CX,aggreedsize
+MOV CX,10
 REP MOVSB
-ADD DI,320-aggreedsize
+ADD DI,310
 DEC DX
 JNZ flyu
 ret
@@ -3309,11 +3541,11 @@ drawflyinten endp
 drawbomb proc
 ;mov di,8644
 mov si,offset bomb
-MOV DX,aggreedsize
+MOV DX,10
 bomb8:
-MOV CX,aggreedsize
+MOV CX,10
 REP MOVSB
-ADD DI,320-aggreedsize
+ADD DI,310
 DEC DX
 JNZ bomb8
 ret
@@ -3322,11 +3554,11 @@ drawbomb endp
 drawfire proc
 ;mov di,8664
 mov si,offset fire
-MOV DX,aggreedsize
+MOV DX,10
 fire8:
-MOV CX,aggreedsize
+MOV CX,10
 REP MOVSB
-ADD DI,320-aggreedsize
+ADD DI,310
 DEC DX
 JNZ fire8
 ret
@@ -3335,11 +3567,11 @@ drawfire endp
 drawbeatme proc
 ;mov di,12484
 mov si,offset beatme
-MOV DX,aggreedsize
+MOV DX,10
 beatme8:
-MOV CX,aggreedsize
+MOV CX,10
 REP MOVSB
-ADD DI,320-aggreedsize
+ADD DI,310
 DEC DX
 JNZ beatme8
 ret
@@ -3470,13 +3702,13 @@ jz tryanother
  
  cmp powerupchooser,1
  jnz a
- mov di,statuspowerleft
+ mov di,48680
  mov powerupcar1timer,0
  call drawflyobstacle
  mov currentpowerforCar1,2
  jmp cl1
  a:
- mov di,statuspowerright
+ mov di,48888
  mov powerupcar2timer,0
  call drawflyobstacle
  mov currentpowerforCar2,2
@@ -3486,13 +3718,13 @@ jz tryanother
   
  cmp powerupchooser,1
  jnz a2
- mov di,statuspowerleft
+ mov di,48680
  mov powerupcar1timer,0
  call drawcreateob
  mov currentpowerforCar1,0
  jmp cl2
  a2:
- mov di,statuspowerright
+ mov di,48888
  mov powerupcar2timer,0
  call drawcreateob
  mov currentpowerforCar2,0
@@ -3501,13 +3733,13 @@ jz tryanother
  handlebeatme:
  cmp powerupchooser,1
  jnz a3
- mov di,statuspowerleft
+ mov di,48680
  mov powerupcar1timer,0
  call drawdecresesofanother
  mov currentpowerforCar1,3
  jmp cl3
  a3:
- mov di,statuspowerright
+ mov di,48888
  mov powerupcar2timer,0
  call drawdecresesofanother
  mov currentpowerforCar2,3
@@ -3516,13 +3748,13 @@ jz tryanother
  handlefire:
  cmp powerupchooser,1
  jnz a4
- mov di,statuspowerleft
+ mov di,48680
  mov powerupcar1timer,0
  call drawIncresespeed
  mov currentpowerforCar1,1
  jmp cl4
  a4:
- mov di,statuspowerright
+ mov di,48888
  mov powerupcar2timer,0
  call drawIncresespeed
  mov currentpowerforCar2,1
@@ -3555,13 +3787,13 @@ jz endboth
  handlefly2:
  cmp powerupchooser,1
  jnz a5
- mov di,statuspowerleft
+ mov di,48680
  mov powerupcar1timer,0
  call drawflyobstacle
  mov currentpowerforCar1,2
  jmp cl5
  a5:
- mov di,statuspowerright
+ mov di,48888
  mov powerupcar2timer,0
  call drawflyobstacle
  mov currentpowerforCar2,2
@@ -3570,13 +3802,13 @@ jz endboth
  handlebomb2:
 cmp powerupchooser,1
  jnz a6
- mov di,statuspowerleft
+ mov di,48680
  mov powerupcar1timer,0
  call drawcreateob
  mov currentpowerforCar1,0
  jmp cl6
  a6:
- mov di,statuspowerright
+ mov di,48888
  mov powerupcar2timer,0
  call drawcreateob
  mov currentpowerforCar2,0
@@ -3585,13 +3817,13 @@ cmp powerupchooser,1
  handlebeatme2:
  cmp powerupchooser,1
  jnz a7
- mov di,statuspowerleft
+ mov di,48680
  mov powerupcar1timer,0
  call drawdecresesofanother
  mov currentpowerforCar1,3
  jmp cl7
  a7:
- mov di,statuspowerright
+ mov di,48888
  mov powerupcar2timer,0
  call drawdecresesofanother
  mov currentpowerforCar2,3
@@ -3600,13 +3832,13 @@ cmp powerupchooser,1
  handlefire2:
  cmp powerupchooser,1
  jnz a8
- mov di,statuspowerleft
+ mov di,48680
  mov powerupcar1timer,0
  call drawIncresespeed
  mov currentpowerforCar1,1
  jmp cl8
  a8:
- mov di,statuspowerright
+ mov di,48888
  mov powerupcar2timer,0
  call drawIncresespeed
  mov currentpowerforCar2,1
@@ -3620,25 +3852,24 @@ cmp powerupchooser,1
     mov powerupchooser,0
  ret
 gotpowerup endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 drawcleaning proc
 mov si,offset floorpic
-MOV DX,aggreedsize
+MOV DX,10
 darkgrey:
-MOV CX,aggreedsize
+MOV CX,10
 REP MOVSB
-ADD DI,320-aggreedsize
+ADD DI,310
 DEC DX
 JNZ darkgrey
 ret
 drawcleaning endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;
 checkforboth proc
 cmp currentpowerforCar1,4
 jz shofsecond
-cmp powerupcar1timer,dissapertimerstatusbar
+cmp powerupcar1timer,5
 jnz incrementtimer
-mov di,statuspowerleft
+mov di,48680
 call Noobstacleleft
 mov currentpowerforCar1,4
 mov powerupcar1timer,0
@@ -3648,9 +3879,9 @@ inc powerupcar1timer
 shofsecond:
 cmp currentpowerforCar2,4
 jz shofsecond2
-cmp powerupcar2timer,dissapertimerstatusbar
+cmp powerupcar2timer,5
 jnz incrementtimer2
-mov di,statuspowerright
+mov di,48888
 call Noobstacleleft
 mov currentpowerforCar2,4
 mov powerupcar2timer,0
@@ -3677,7 +3908,7 @@ checkforboth endp
                             jnz tryup
                             lea si,floor
                             dec di
-                            sub di,327
+                            sub di,330
                             dec dx
                             jnz beginup
                             mov currentpoerdirection,0
@@ -3688,7 +3919,7 @@ checkforboth endp
                             mov bx,pos_box1
                             lea si,floor
                             mov di,bx
-                            add di,canup
+                            add di,3520
                             begindown:
                             mov cx,pixel_size
                             trydown:
@@ -3699,7 +3930,7 @@ checkforboth endp
                             jnz trydown
                             dec di
                             lea si,floor
-                            add di,313
+                            add di,310
                             dec dx
                             jnz begindown
                             mov currentpoerdirection,2
@@ -3708,7 +3939,7 @@ checkforboth endp
                             generaltryleft:
                             lea si,floor
                             mov dx,pixel_size
-                            mov bx,pos_box1
+                             mov bx,pos_box1
                             mov di,bx
                             dec di
                             beginleft:
@@ -3723,7 +3954,7 @@ checkforboth endp
                             jnz tryleft
                             lea si,floor
                             dec di
-                            sub di,2240
+                            sub di,3200
                             dec dx
                             jnz beginleft
                              mov currentpoerdirection,3
@@ -3734,7 +3965,7 @@ checkforboth endp
                              mov dx,pixel_size
                              mov bx,pos_box1
                             mov di,bx
-                            add di,8
+                            add di,11
                             beginright:
                             mov cx,pixel_size
                             tryright:
@@ -3746,7 +3977,7 @@ checkforboth endp
                             dec cx
                             jnz tryright
                             lea si,floor                         
-                            sub di,2240
+                            sub di,3200
                             inc di
                             dec dx
                             jnz beginright
@@ -3790,7 +4021,7 @@ checkforboth endp
  checkavailblecar1 endp
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 checkavailblecar2 proc
- mov bx,pos_box2
+  mov bx,pos_box2
  mov di,bx 
  sub di,k
  lea si,floor
@@ -3805,7 +4036,7 @@ checkavailblecar2 proc
                             jnz tryup2
                             lea si,floor
                             dec di
-                            sub di,327
+                            sub di,330
                             dec dx
                             jnz beginup2
                             mov currentpoerdirection,0
@@ -3813,10 +4044,10 @@ checkavailblecar2 proc
                             ;;;;;;;;;;;;;;;;;;;;;;;;;;;downpower
                             generaltrydown2:
                             mov dx,pixel_size
-                            mov bx,pos_box2
+                            mov bx,pos_box1
                             lea si,floor
                             mov di,bx
-                            add di,canup
+                            add di,3520
                             begindown2:
                             mov cx,pixel_size
                             trydown2:
@@ -3827,7 +4058,7 @@ checkavailblecar2 proc
                             jnz trydown2
                             dec di
                             lea si,floor
-                            add di,313
+                            add di,310
                             dec dx
                             jnz begindown2
                             mov currentpoerdirection,2
@@ -3836,7 +4067,7 @@ checkavailblecar2 proc
                             generaltryleft2:
                             lea si,floor
                             mov dx,pixel_size
-                             mov bx,pos_box2
+                             mov bx,pos_box1
                             mov di,bx
                             dec di
                             beginleft2:
@@ -3851,7 +4082,7 @@ checkavailblecar2 proc
                             jnz tryleft2
                             lea si,floor
                             dec di
-                            sub di,2240
+                            sub di,3200
                             dec dx
                             jnz beginleft2
                              mov currentpoerdirection,3
@@ -3862,7 +4093,7 @@ checkavailblecar2 proc
                              mov dx,pixel_size
                              mov bx,pos_box2
                             mov di,bx
-                            add di,8
+                            add di,11
                             beginright2:
                             mov cx,pixel_size
                             tryright2:
@@ -3874,7 +4105,7 @@ checkavailblecar2 proc
                             dec cx
                             jnz tryright2
                             lea si,floor                         
-                            sub di,2240
+                            sub di,3200
                             inc di
                             dec dx
                             jnz beginright2
@@ -3916,226 +4147,4 @@ checkavailblecar2 proc
                             mov currentpoerdirection,4
                             ret            
  checkavailblecar2 endp
- drawbeginpage proc
-
-    MOV SI,offset beginpage
-    
-    MOV DX,160
-
-    REPEATt:
-    MOV CX,280
-    REP MOVSB
-    ADD DI,320-280
-    DEC DX
-    JNZ REPEATt 
-    ret
- drawbeginpage endp
- drawleftcarinstatus proc
- MOV SI,offset leftcaringame
- MOV DX,20
-
-REPEAT3:
-MOV CX,33
-REP MOVSB
-ADD DI,SCREEN_WIDTH-33
-DEC DX
-JNZ REPEAT3
-ret
- drawleftcarinstatus endp
- drawrightcarinstatus proc
- MOV SI,offset rightcar
-  MOV DX,20
-    REPEAT2:
-    MOV CX,37
-REP MOVSB
-ADD DI,SCREEN_WIDTH-37
-DEC DX
-JNZ REPEAT2
-ret
- drawrightcarinstatus endp
-randompoweratbegining proc far
-
-generalrandom:
-
-;mov cx,global_delay
-;call my_delay
-mov   ah, 2ch
-int   21h   
-mov ah,0
-mov al,dl
-add al,fun
-mov cl,dh
-ror al,cl
-mov fun,al
-mov bl,fun
-
-               
-mov randomforbegin ,bl
-
-mov ax,0
- mov ax,320
- mov bl,randomforbegin
- mul bl 
- mov specialdi,ax
- mov di,specialdi
- mov currentspecial,ax
- beginchecking:
- mov counter2,320
- scanrow: 
- call checkdirctionsfordirection
- cmp foundflag,1
- jz success
-add currentspecial,1
- dec counter2
- cmp counter2,0
- jz restsuccess
- jnz scanrow
- success:
- mov di,currentspecial
-  mov foundflag,0 
-jmp handelsucess
- restsuccess:
- dec counter
- cmp counter,0
- jz endranomization
- jnz generalrandom
- handelsucess:
  
- mov al,randomforbegin
- mov ah,0
- mov bl,4
- div bl
- mov reminder4begin,ah
- cmp reminder4begin,4
- jz restsuccess
- mov di,currentspecial 
- cmp reminder4begin,3
- jnz anotherpower
- call drawbeatme
- jmp restsuccess
- anotherpower:
-cmp reminder4begin,2
- jnz anotherpower2
- call drawflyinten
- jmp restsuccess
- anotherpower2:
- cmp reminder4begin,1
- jnz anotherpower3
- call drawfire
- jmp restsuccess
- anotherpower3:
- cmp reminder4begin,0 
- call drawbomb
- jmp restsuccess
-endranomization:
-ret
-randompoweratbegining endp
-
-checkdirctionsfordirection proc far
-
-mov bx,currentspecial
-mov di,bx 
-lea si,floor
-mov dx,pixel_size                 
-                          
-                            
-                            begindownb:
-                            mov cx,pixel_size
-                            trydownb:
-                            cmpsb
-                            jnz vantcreate2
-                            dec si                            
-                            dec cx
-                            jnz trydownb
-                            dec di
-                            lea si,floor
-                            add di,313
-                            dec dx
-                            jnz begindownb                            
-                            jmp cancreateup2b
-                            vantcreate2:
-                            mov foundflag,0                            
-                            ret
-                            cancreateup2b:
-                            mov foundflag,1                            
-                            ret                           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;powerleft
-                            
-checkdirctionsfordirection endp
- drawleftinwinning  proc
-lea si,blueover
-     MOV DX,30
-
-    REPEATT5:
-    MOV CX,50
-REP MOVSB
-ADD DI,SCREEN_WIDTH-50
-DEC DX
-JNZ REPEATT5
-ret
-;;;;;;;;;;;;;;;;; redcarin over
-drawleftinwinning  endp
-
- drawrightinwinng proc
-lea si,redover
- 
-     MOV DX,30
-
-    REPEATT6:
-    MOV CX,55
-REP MOVSB
-ADD DI,SCREEN_WIDTH-55
-DEC DX
-JNZ REPEATT6
-ret
-drawrightinwinng endp
-afterend proc
-mov timer,0
- mov ah, 2ch
-    int 21h
-    mov prevsec, dh
-
-taketimeE2:
-mov bl,cursec
-mov prevsec,bl
-    mov ah, 2ch
-    int 21h
-    mov cursec, dh
-    mov bh,prevsec
-    ;sub cursec, bl ; Calculate the difference in seconds
-    cmp cursec, bh 
-    je taketimeE2
-    inc timer      ; Check if 10 seconds have passed
-    cmp timer,5
-
-    jge returnn     ; If 10 seconds have passed, display the message
-    jmp taketimeE2
-    returnn:
-    mov ah,00h 
-mov al,03h 
-int 10h
-jmp lopp
-afterend endp
-drawcelebrate proc
-  lea si,celebratemonkey
-     MOV DX,40
-    REPEATT4:
-    MOV CX,58
-REP MOVSB
-ADD DI,SCREEN_WIDTH-58
-DEC DX
-JNZ REPEATT4
-ret
-drawcelebrate endp 
-drawcrying proc
-    lea si,gameoverpic
-    
-     MOV DX,80
-
-    REPEAT4:
-    MOV CX,71
-REP MOVSB
-ADD DI,SCREEN_WIDTH-71
-DEC DX
-JNZ REPEAT4
-ret 
-drawcrying endp
