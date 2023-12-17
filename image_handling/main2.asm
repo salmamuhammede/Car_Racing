@@ -1537,7 +1537,7 @@ temporaryLength dw 1 ;;; length el track el available
 temporaryLength2 dw 1 ;;; length el track el available mn point2
 dontDraw dw 0 ;;; boolean hytl3 ml checker functions
 drawn dw 1
-
+changesLeft dw 0
 x dw 0
 y dw 0
 lengthD dw 22  
@@ -1667,9 +1667,8 @@ passobstacle_c2 db 0 ; flag to pass obstacle if obtained power up
 startobstaclepos_c1 dw 0 ; save the starting position of obstacle to pass
 startobstaclepos_c2 dw 0 ; save the starting position of obstacle to pass
 temp_color_powerup  db 0
-temp_current_pass  dw 0
 ;;;;;;;;;;;;;;;;;;;;;;;;
-
+prev_rand db 3
 
 .Code
 ;include begin.inc

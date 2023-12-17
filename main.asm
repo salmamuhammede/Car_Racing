@@ -1543,13 +1543,10 @@ startChatMsg db 'power ups ','$'
 wrongname1flag db 0
 wrongname2flag db 0
 flaginitial db 0
-BufferOffset equ 0  ; Set the offset where you want the off-screen buffer to start
-BufferSize   equ 320 * 200 ; Adjust based on your screen resolution
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;d$S
 lastDirection dw 1 ;;;;0 UP 1 DOWN 2 Right 3 Left
 x1 dw 0
 x2 dw 0
-
 y1 dw 0
 y2 dw 0
 row dw 140;;;;; akher heta fl track mn taht b3do inline chat
@@ -1560,7 +1557,8 @@ temporaryLength dw 1 ;;; length el track el available
 temporaryLength2 dw 1 ;;; length el track el available mn point2
 dontDraw dw 0 ;;; boolean hytl3 ml checker functions
 drawn dw 1
-
+prev_rand db 3
+changesLeft dw 0
 x dw 0
 y dw 0
 lengthD dw 22  

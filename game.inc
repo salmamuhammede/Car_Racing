@@ -317,6 +317,9 @@ call drawrightcarinstatus
         mov pos_box2, 333
            
         call drawTrack
+         mov ax, changesLeft
+        cmp ax, 3
+        jb continue
         call initialize_cars
         call randompoweratbegining
       
@@ -3754,6 +3757,11 @@ drawLeft proc far                                   ;;; after checking
 
       skipSwapL:    
                     mov   lengthT, ax
+                    mov ax, lastDirection
+                    cmp ax,3
+                    jz dontAddL
+                    inc changesLeft
+                    dontAddL:
                     call  trackLeft
                     mov   ax, lengthD
                     mov   lengthT, ax
@@ -3785,10 +3793,25 @@ drawDOWN proc far
                     ret
 drawDOWN endp
 
+randFunc proc far
+                      mov dx, cx
+                        mov  ah, 2ch
+                        int  21h
+                        mov  ah, 0
+                        mov  al, dl                       ;;micro seconds
+                        add al, prev_rand
+                        mov cl, dh
+                        ror al, cl
+                        mov prev_rand, al
+                        mov cx, dx
+                        mov bl, 4
+                        div  bl
 
+ret
+randFunc endp
 drawTrack proc far
    
-        
+
 
                     call  drawStartLine
 
@@ -3806,24 +3829,15 @@ drawTrack proc far
                     int   21h
 
       ;; test2
-                    mov   ch,0
-                    mov   cl, dh
-                    add cl, 10
-                    shl   cl, 2
-      loop22:       
-                    push  cx
-                    mov   ah, 2ch
-                    int   21h
-                    pop   cx
-                    loop  loop22
-      ;; test2
-                    mov   ah, 0
-                    mov   al, dl                    ;;micro seconds?
-                    mov   bl, 4
-        
-                    div   bl
-      ;;; ah = rest 
-                    
+                    mov  ah, 0
+                    mov  al, dl                       ;;micro seconds
+                    add al, prev_rand
+                    mov cl, dh
+                    ror al, cl
+                    mov prev_rand, al
+                    mov cx, dx
+                    mov bl, 4
+                    div  bl
                     jz next
 
                     call RandObst
@@ -3928,6 +3942,19 @@ drawEndLine endp
 
 
 drawStartLine proc far
+        mov changesLeft, 0
+        mov x1,0
+        mov x2,0
+        mov y1,0
+        mov y2,0
+        mov lastDirection,1
+        mov ax, widthT
+        mov lengthT, ax
+        mov lengthD, ax
+        mov dontDraw,0
+        mov drawObstacle,0
+        mov x,0
+        mov y,0
       ;;start line
                     mov   ax, widthT
                     mov   lengthD, ax

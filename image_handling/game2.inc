@@ -195,8 +195,13 @@ mov Di ,46675
 call drawrightcarinstatus
         mov pos_box1, 321
         mov pos_box2, 333
-           
+
         call drawTrack
+        ;; repeat Track
+        mov ax, changesLeft
+        cmp ax, 3
+        jb continue
+        ;;
         call initialize_cars
         call randompoweratbegining
         call set_interrupt
@@ -206,7 +211,6 @@ call drawrightcarinstatus
           
       ret
 game endp
-
 ; ------------------------- Draw Cars ----------------------------------------- ;
 set_interrupt proc
             
@@ -457,13 +461,7 @@ move_b1            proc
                                     cmp startobstaclepos_c1, 0
                                     jnz cont_u1
                                     mov startobstaclepos_c1,di
-                                    dec startobstaclepos_c1
                                     sub startobstaclepos_c1, k*(lengthObstacle - 2)
-                                    push di
-                                    mov di,startobstaclepos_c1
-                                    mov temp_current_pass, 1
-                                    call scan_left_o
-                                    pop di
                                     jmp here_u1
                                     call_forpowers_u1:
                                                     mov prevdicar1,di
@@ -475,7 +473,7 @@ move_b1            proc
                                                     mov cl, es:[di]
                                                     mov temp_color_powerup, cl
                                                     pop cx
-                                                    call scan_left_p
+                                                    call scan_left
                                                     pop di
                                                     call gotpowerup
                                                     jmp here_u1
@@ -584,11 +582,6 @@ move_b1            proc
                                     jnz cont_d1
                                     mov startobstaclepos_c1,di
                                     dec startobstaclepos_c1
-                                    push di
-                                    mov di,startobstaclepos_c1
-                                    mov temp_current_pass, 1
-                                    call scan_left_o
-                                    pop di
                                     jmp here_d1
                                     call_forpowers_d1:
                                                     mov prevdicar1,di
@@ -599,7 +592,7 @@ move_b1            proc
                                                     mov cl, es:[di]
                                                     mov temp_color_powerup, cl
                                                     pop cx
-                                                    call scan_left_p
+                                                    call scan_left
                                                     pop di
                                                     call gotpowerup
                                                     jmp here_d1
@@ -719,11 +712,6 @@ move_b1            proc
                                     jnz cont_r1
                                     mov startobstaclepos_c1,di
                                     dec startobstaclepos_c1
-                                    push di
-                                    mov di,startobstaclepos_c1
-                                    mov temp_current_pass, 1
-                                    call scan_up_o
-                                    pop di
                                     jmp here_r1
                                     call_forpowers_r1:
                                                     mov prevdicar1,di
@@ -734,7 +722,7 @@ move_b1            proc
                                                     mov cl, es:[di]
                                                     mov temp_color_powerup, cl
                                                     pop cx
-                                                    call scan_up_p
+                                                    call scan_up
                                                     pop di
                                                     call gotpowerup
                                                     jmp here_r1
@@ -855,13 +843,6 @@ move_b1            proc
                                     jnz cont_l1
                                     mov startobstaclepos_c1,di
                                     sub startobstaclepos_c1, (lengthObstacle - 1)
-                                    mov temp_current_pass, 1
-                                    push di
-                                    mov di,startobstaclepos_c1
-                                    call scan_up_o
-                                    mov di,startobstaclepos_c1
-                                    call scan_left_o
-                                    pop di
                                     jmp here_l1
                                     call_forpowers_l1:
                                                     mov prevdicar1,di
@@ -871,11 +852,11 @@ move_b1            proc
                                                     push cx
                                                     mov cl, es:[di]
                                                     mov temp_color_powerup, cl
-                                                    call scan_up_p
+                                                    call scan_up
                                                     mov di,prevdicar1
                                                     mov cl, es:[di]
                                                     mov temp_color_powerup, cl
-                                                    call scan_left_p
+                                                    call scan_left
                                                     pop di
                                                     pop cx
                                                     call gotpowerup
@@ -1009,13 +990,7 @@ move_b2            proc
                                     cmp startobstaclepos_c2, 0
                                     jnz cont_u2
                                     mov startobstaclepos_c2,di
-                                    dec startobstaclepos_c2
                                     sub startobstaclepos_c2, k*(lengthObstacle - 2)
-                                    push di
-                                    mov di,startobstaclepos_c2
-                                    mov temp_current_pass, 2
-                                    call scan_left_o
-                                    pop di
                                     jmp here_u2
                                     call_forpowers_u2:
                                                     mov prevdicar2,di
@@ -1027,7 +1002,7 @@ move_b2            proc
                                                     mov cl, es:[di]
                                                     mov temp_color_powerup, cl
                                                     pop cx
-                                                    call scan_left_p
+                                                    call scan_left
                                                     pop di
                                                     call gotpowerup
                                                     jmp here_u2
@@ -1138,11 +1113,6 @@ move_b2            proc
                                     jnz cont_d2
                                     mov startobstaclepos_c2,di
                                     dec startobstaclepos_c2
-                                    push di
-                                    mov di,startobstaclepos_c2
-                                    mov temp_current_pass, 2
-                                    call scan_left_o
-                                    pop di
                                     jmp here_d2
                                     call_forpowers_d2:
                                                     mov prevdicar2,di
@@ -1153,7 +1123,7 @@ move_b2            proc
                                                     mov cl, es:[di]
                                                     mov temp_color_powerup, cl
                                                     pop cx
-                                                    call scan_left_p
+                                                    call scan_left
                                                     pop di
                                                     call gotpowerup
                                                     jmp here_d2
@@ -1273,11 +1243,6 @@ move_b2            proc
                                     jnz cont_r2
                                     mov startobstaclepos_c2,di
                                     dec startobstaclepos_c2
-                                    push di
-                                    mov di,startobstaclepos_c2
-                                    mov temp_current_pass, 2
-                                    call scan_up_o
-                                    pop di
                                     jmp here_r2
                                     call_forpowers_r2:
                                                     mov prevdicar2,di
@@ -1288,7 +1253,7 @@ move_b2            proc
                                                     mov cl, es:[di]
                                                     mov temp_color_powerup, cl
                                                     pop cx
-                                                    call scan_up_p
+                                                    call scan_up
                                                     pop di
                                                     call gotpowerup
                                                     jmp here_r2
@@ -1415,13 +1380,6 @@ move_b2            proc
                                     jnz cont_l2
                                     mov startobstaclepos_c2,di
                                     sub startobstaclepos_c2, (lengthObstacle - 1)
-                                    mov temp_current_pass, 2
-                                    push di
-                                    mov di,startobstaclepos_c2
-                                    call scan_up_o
-                                    mov di,startobstaclepos_c2
-                                    call scan_left_o
-                                    pop di
                                     jmp here_l2
                                     call_forpowers_l2:
                                                     mov prevdicar2,di
@@ -1431,11 +1389,11 @@ move_b2            proc
                                                     push cx
                                                     mov cl, es:[di]
                                                     mov temp_color_powerup, cl
-                                                    call scan_up_p
+                                                    call scan_up
                                                     mov di,prevdicar2
                                                     mov cl, es:[di]
                                                     mov temp_color_powerup, cl
-                                                    call scan_left_p
+                                                    call scan_left
                                                     pop di
                                                     pop cx
                                                     call gotpowerup
@@ -1745,10 +1703,10 @@ activate_powers proc
                             jnz try1 
                             mov currentpowerforCar1, 4
                             call speedup1
-                            mov di,statuspowerleft
-                            call Noobstacleleft
-                            mov currentpowerforCar1,4
-                            mov powerupcar1timer,0          
+                              mov di,statuspowerleft
+call Noobstacleleft
+mov currentpowerforCar1,4
+mov powerupcar1timer,0          
                             mov currentpoweractivatedrforCar1,1
                             jmp endpowers
                             try1: ; three decrease other car speed ; 
@@ -1758,10 +1716,10 @@ activate_powers proc
                                 mov di,pos_box1
                                 mov currentpoweractivatedrforCar1,3
                                 call speeddown1
-                                mov di,statuspowerleft
-                                call Noobstacleleft
-                                mov currentpowerforCar1,4
-                                mov powerupcar1timer,0
+mov di,statuspowerleft
+call Noobstacleleft
+mov currentpowerforCar1,4
+mov powerupcar1timer,0
                                 jmp endpowers
                             try2:
                                 cmp currentpowerforCar1, 0
@@ -1775,9 +1733,9 @@ activate_powers proc
                                 mov currentpoweractivatedrforCar1,0
                                 call drawspecialobstacle
                                 mov di,statuspowerleft
-                                call Noobstacleleft
-                                mov currentpowerforCar1,4
-                                mov powerupcar1timer,0
+call Noobstacleleft
+mov currentpowerforCar1,4
+mov powerupcar1timer,0
                                 jmp endpowers
                             try3:
                                 cmp currentpowerforCar1, 2
@@ -1786,9 +1744,9 @@ activate_powers proc
                                 mov currentpoweractivatedrforCar1,2
                                 mov passobstacle_c1,1 ; will be set to zero when passing this obstacle
                                 mov di,statuspowerleft
-                                call Noobstacleleft
-                                mov currentpowerforCar1,4
-                                mov powerupcar1timer,0
+call Noobstacleleft
+mov currentpowerforCar1,4
+mov powerupcar1timer,0
                                 jmp endpowers
 
                 activatefor2:
@@ -1802,10 +1760,10 @@ activate_powers proc
                             mov currentpowerforCar2, 4
                             mov currentpoweractivatedrforCar2,1
                             call speedup1
-                            mov di,statuspowerright
-                            call Noobstacleleft
-                            mov currentpowerforCar2,4
-                            mov powerupcar2timer,0
+                           mov di,statuspowerright
+call Noobstacleleft
+mov currentpowerforCar2,4
+mov powerupcar2timer,0
                             jmp endpowers
                             try11:
                                 cmp currentpowerforCar2, 3
@@ -1815,9 +1773,9 @@ activate_powers proc
                                 mov currentpoweractivatedrforCar2,3
                                 call speeddown1
                                 mov di,statuspowerright
-                                call Noobstacleleft
-                                mov currentpowerforCar2,4
-                                mov powerupcar2timer,0
+call Noobstacleleft
+mov currentpowerforCar2,4
+mov powerupcar2timer,0
                                 jmp endpowers
                             try22:
                                 cmp currentpowerforCar2, 0
@@ -1831,18 +1789,18 @@ activate_powers proc
                                 mov currentpoweractivatedrforCar2,0
                                 call drawspecialobstacle
                                 mov di,statuspowerright
-                                call Noobstacleleft
-                                mov currentpowerforCar2,4
-                                mov powerupcar2timer,0
+call Noobstacleleft
+mov currentpowerforCar2,4
+mov powerupcar2timer,0
                                 jmp endpowers
                             try33:
                                 cmp currentpowerforCar2, 2
                                 jnz nochange2
                                 mov currentpowerforCar2, 4
                                 mov di,statuspowerright
-                                call Noobstacleleft
-                                mov currentpowerforCar2,4
-                                mov powerupcar2timer,0
+call Noobstacleleft
+mov currentpowerforCar2,4
+mov powerupcar2timer,0
                                 mov currentpoweractivatedrforCar2,2
                                 mov passobstacle_c2,1 ; will be set to zero when passing this obstacle
                                 jmp endpowers
@@ -1871,7 +1829,6 @@ firstchecksbeforeobstacle proc ; input - > di pos of car , output -> draw or lea
                                         jnz continuechecks1
                                         add di, pixel_size ; adjust parameters
                                         mov posforobstacle, di
-                                        call checkvalidplace
                                         jmp endfirstchecksbeforeobstacle
                           continuechecks1:
                                         cmp last_mov_c1, 1 ; down
@@ -1910,7 +1867,6 @@ firstchecksbeforeobstacle proc ; input - > di pos of car , output -> draw or lea
                                                             jnz continuechecks2
                                                             add di, pixel_size ; adjust parameters
                                                             mov posforobstacle, di
-                                                            call checkvalidplace
                                                             jmp endfirstchecksbeforeobstacle
                                             continuechecks2:
                                             cmp last_mov_c2, 1 ; down
@@ -1946,8 +1902,8 @@ firstchecksbeforeobstacle endp
 checkvalidplace proc ; -> input: di(pos of the new obstacle to check)
                 pusha
                 mov si,offset color_path
-                mov dx,lengthObstacle - 1
-                mov cx,lengthObstacle - 1
+                mov dx,pixel_size
+                mov cx,pixel_size
                 outerloop:
                             mov cx,pixel_size
                             check_myplace:
@@ -1956,7 +1912,7 @@ checkvalidplace proc ; -> input: di(pos of the new obstacle to check)
                                             jnz notvalid ; if sth not track then not valid
                                             dec cx 
                                             jnz check_myplace ; complete inner loop
-                            sub di,lengthObstacle - 1
+                            sub di,pixel_size
                             add di,k
                             dec dx
                             jnz outerloop ; complete outer loop
@@ -1969,7 +1925,7 @@ checkvalidplace proc ; -> input: di(pos of the new obstacle to check)
                 ret
 checkvalidplace endp
 ; --------------- Adjust positions for power ups ----------------------;
-scan_left_p proc
+scan_left proc
             push di
             push si
             mov si,offset temp_color_powerup
@@ -1996,9 +1952,9 @@ scan_left_p proc
                     pop si
                     pop di
             ret
-scan_left_p endp
+scan_left endp
 ;----------------------------------------------------------------------;
-scan_up_p     proc
+scan_up     proc
             push di
             push si
             mov si,offset temp_color_powerup
@@ -2029,70 +1985,7 @@ scan_up_p     proc
                     pop si
                     pop di
             ret
-scan_up_p     endp
-; ---------------------------------------------------------------------;
-; --------------- Adjust positions for power ups ----------------------;
-scan_left_o proc
-            push di
-            push si
-            mov si,offset obstacle_color
-            cmp temp_current_pass, 1
-            jnz scan_left_2o 
-            scan_left_1o:
-                        cmpsb 
-                        jnz save_c1o
-                        dec si
-                        sub di,2
-                        jmp scan_left_1o
-            scan_left_2o:
-                        cmpsb 
-                        jnz save_c2o
-                        dec si
-                        sub di,2
-                        jmp scan_left_2o
-            save_c1o:
-                    mov startobstaclepos_c1, di
-                    jmp end_scan_lefto
-            save_c2o:
-                    mov startobstaclepos_c2, di
-            end_scan_lefto:
-                    pop si
-                    pop di
-            ret
-scan_left_o endp
-;----------------------------------------------------------------------;
-scan_up_o     proc
-            push di
-            push si
-            mov si,offset obstacle_color
-            cmp temp_current_pass, 1
-            jnz scan_up_2o
-            scan_up_1o:
-                        cmpsb 
-                        jnz save_c12o
-                        sub di, k + 1
-                        dec si
-                        jmp scan_up_1o
-            scan_up_2o:
-                        cmpsb 
-                        jnz save_c22o
-                        sub di,k + 1
-                        dec si
-                        jmp scan_up_2o
-            save_c12o:
-                    mov startobstaclepos_c1, di
-                    dec startobstaclepos_c1
-                    add startobstaclepos_c1, k
-                    jmp end_scan_upo
-            save_c22o:
-                    mov startobstaclepos_c2, di
-                    dec startobstaclepos_c2
-                    add startobstaclepos_c2, k
-            end_scan_upo:
-                    pop si
-                    pop di
-            ret
-scan_up_o     endp
+scan_up     endp
 ; ---------------------------------------------------------------------;
 drawspecialobstacle proc
                     push si
@@ -3633,6 +3526,11 @@ drawLeft proc far                                   ;;; after checking
 
       skipSwapL:    
                     mov   lengthT, ax
+                    mov ax, lastDirection
+                    cmp ax,3
+                    jz dontAddL
+                    inc changesLeft
+                    dontAddL:
                     call  trackLeft
                     mov   ax, lengthD
                     mov   lengthT, ax
@@ -3664,10 +3562,25 @@ drawDOWN proc far
                     ret
 drawDOWN endp
 
+randFunc proc far
+                      mov dx, cx
+                        mov  ah, 2ch
+                        int  21h
+                        mov  ah, 0
+                        mov  al, dl                       ;;micro seconds
+                        add al, prev_rand
+                        mov cl, dh
+                        ror al, cl
+                        mov prev_rand, al
+                        mov cx, dx
+                        mov bl, 4
+                        div  bl
 
+ret
+randFunc endp
 drawTrack proc far
    
-        
+
 
                     call  drawStartLine
 
@@ -3685,24 +3598,15 @@ drawTrack proc far
                     int   21h
 
       ;; test2
-                    mov   ch,0
-                    mov   cl, dh
-                    add cl, 10
-                    shl   cl, 2
-      loop22:       
-                    push  cx
-                    mov   ah, 2ch
-                    int   21h
-                    pop   cx
-                    loop  loop22
-      ;; test2
-                    mov   ah, 0
-                    mov   al, dl                    ;;micro seconds?
-                    mov   bl, 4
-        
-                    div   bl
-      ;;; ah = rest 
-                    
+                    mov  ah, 0
+                    mov  al, dl                       ;;micro seconds
+                    add al, prev_rand
+                    mov cl, dh
+                    ror al, cl
+                    mov prev_rand, al
+                    mov cx, dx
+                    mov bl, 4
+                    div  bl
                     jz next
 
                     call RandObst
@@ -3807,6 +3711,19 @@ drawEndLine endp
 
 
 drawStartLine proc far
+        mov changesLeft, 0
+        mov x1,0
+        mov x2,0
+        mov y1,0
+        mov y2,0
+        mov lastDirection,1
+        mov ax, widthT
+        mov lengthT, ax
+        mov lengthD, ax
+        mov dontDraw,0
+        mov drawObstacle,0
+        mov x,0
+        mov y,0
       ;;start line
                     mov   ax, widthT
                     mov   lengthD, ax
