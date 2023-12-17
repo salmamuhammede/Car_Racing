@@ -1,29 +1,18 @@
 game proc far
-mov ah,0    
+;;;;;;;;;;;;;;;;;;
+    mov ah,0    
     mov al,13h  ;GRAPHICS
-    INT 10H  
-     
-      mov aX, 0600h ;bacground
-     mov bh, 00h
+    INT 10H       
+    mov aX, 0600h ;bacground
+    mov bh, 105
     mov cx, 0000h
     mov dx, 184Fh       
     int 10h 
     MOV DI,6420 ;STARTING PIXEL
       ;;;;;;;;;;;;;;;;;
-
-       MOV AX,0A000h
+    MOV AX,0A000h
     MOV ES,AX
-
-    MOV SI,offset beginpage
-    
-    MOV DX,160
-
-    REPEATt:
-    MOV CX,280
-    REP MOVSB
-    ADD DI,320-280
-    DEC DX
-    JNZ REPEATt 
+    call drawbeginpage 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;done
     lm:
     mov ah,0
@@ -32,104 +21,186 @@ mov ah,0
     cmp ah, bl
     jz label2
     jnz lm
-label2:
-mov ah,00h 
-mov al,03h 
-int 10h
+    label2:
+ 
 
-mov ax,0600h
-mov bh,5eh  ;fore yellow/back blue 
-mov cx,0 ;start
-mov dx,184FH ;end
+mov ax, 0600h ; Background color
+mov bh, 00h
+mov cx, 0504h
+mov dx, 0813h
 int 10h
-;;;;;begin pos
 mov ah,2
 mov bh,0
-mov dl,1
-mov dh,1
+mov dl,4 ;take name
+mov dh,5
 int 10h
 
 ;printMsg EnterPlayer1msg
-mov ah,9
-mov dx,offset Player1msg
+mov ah, 9
+mov dx, offset Player1msg
+mov bl, 3eh  ; Set the desired color attribute
 int 21h
+tryagainname1:
+cmp wrongname1flag,0
+jz continuenaming
+mov wrongname1flag,0
+mov cx,17  
+mov di,offset firstPlayerName[2] 
+
+lopplk: 
+mov [di],'$'
+inc di
+loop lopplk
+mov ax, 0600h ; Background color
+mov bh, 00h
+mov cx, 0604h
+mov dx, 0713h
+int 10h
+mov ah,2
+mov bh,0
+mov dl,4 ;take name
+mov dh,7
+int 10h
+mov ah, 9
+mov dx, offset wrong
+mov bl, 3eh  ; Set the desired color attribute
+int 21h
+continuenaming:
+
+;;;;;begin pos
 ;;;;;;;;;;;;
 mov ah,2
 mov bh,0
-mov dl,1;take name
-mov dh,2
+mov dl,4;take name
+mov dh,6
 int 10h
 
+; get the name
 mov ah,0AH 
 mov dx,offset firstPlayerName
 int 21h
-lea si, firstPlayerName+2
-;cmp [si],
-;;;;;;;;;;;
-mov ah,2;take initial points for player1
-mov bh,0
-mov dl,1
-mov dh,8
+
+    mov dl, byte ptr [firstPlayerName+1] ; Load the length of the input string
+    cmp dl, 15
+    jbe checkalpha
+    mov wrongname1flag, 1
+    jmp tryagainname1
+checkalpha:
+mov dl,firstPlayerName[2]
+;check below Z
+checkATOZ:
+    mov cl,'Z'
+    cmp dl,cl ;check if between A,Z
+    jbe above
+    jmp checkaTOzsmall
+
+above:
+   mov cl,'A'
+   cmp dl,cl
+    jae taketheother
+    mov wrongname1flag,1
+    jmp tryagainname1
+
+checkaTOzsmall:
+   mov al,'z'
+    cmp dl,al     ;check if between a,z   
+    jbe taketheother
+    mov wrongname1flag,1
+    jmp tryagainname1
+taketheother:
+mov ax, 0600h ; Background color
+mov bh, 00h
+mov cx, 0704h
+mov dx, 0813h
 int 10h
-mov ah,9
-mov dx,offset initialpmsg
-int 21h   
- ;;;;;;;;;;;;;;;;;;; store it
-mov ah, 1 
-INT 21H 
-mov fppoints,al 
-;;;;;;;;;;;;;;;;;;;;;
+
+mov ax, 0600h ; Background color
+mov bh, 00h
+mov cx, 0a04h
+mov dx, 0d13h
+int 10h
+
 mov ah,2
 mov bh,0
-mov dl,1; second player turn
+mov dl,4 ;take name
+mov dh,10
+int 10h
+
+;printMsg EnterPlayer1msg
+mov ah, 9
+mov dx, offset Player2msg
+mov bl, 3eh  ; Set the desired color attribute
+int 21h
+
+tryagainname2:
+cmp wrongname2flag,0
+jz continuenaming2
+mov wrongname2flag,0
+mov cx,17  
+mov di,offset secondPlayerName[2] 
+lopplk2: 
+mov [di],'$'
+inc di
+loop lopplk2
+mov ax, 0600h ; Background color
+mov bh, 00h
+mov cx, 0b04h
+mov dx, 0d13h
+int 10h
+
+mov ah,2
+mov bh,0
+mov dl,4 ;take name
 mov dh,12
-int 10h 
+int 10h
 
-mov ah,9
-mov dx,offset interruptmsg
-int 21h  
-mov ah, 02h    
-    mov dl, 1
-    mov bh,0
-    mov dh, 15
-    int 10h
-;;;;;;;;;;;;;;;;;;;;
-mov ah,9
-mov dx,offset Player1msg
-int 21h 
+mov ah, 9
+mov dx, offset wrong2
+mov bl, 3eh  ; Set the desired color attribute
+int 21h
 
+continuenaming2:
+
+;;;;;begin pos
+;;;;;;;;;;;;
 mov ah,2
 mov bh,0
-mov dl,1
-mov dh,16
-int 10h 
-
+mov dl,4;take name
+mov dh,11
+int 10h
+; get the name
 mov ah,0AH 
 mov dx,offset secondPlayerName
 int 21h
+ mov dl, byte ptr [secondPlayerName+1] ; Load the length of the input string
+    cmp dl, 15
+    jbe checkalpha2
+    mov wrongname2flag, 1
+    jmp tryagainname2
+checkalpha2:
+mov dl,secondPlayerName[2]
+;check below Z
+checkATOZ2:
+    mov cl,'Z'
+    cmp dl,cl ;check if between A,Z
+    jbe above2
+    jmp checkaTOzsmall2
 
-mov ah,2
-mov bh,0
-mov dl,1
-mov dh,20
-int 10h
+above2:
+   mov cl,'A'
+   cmp dl,cl
+    jae LOOPL
+    mov wrongname2flag,1
+    jmp tryagainname2
 
-mov ah,9
-mov dx,offset initialpmsg
-int 21h   
-  
-mov ah, 1 
-INT 21H 
-mov sppoints,al 
-mov ah,2
-mov bh,0
-mov dl,1
-mov dh,22
-int 10h
-mov ah,9
-mov dx,offset choicePhasemsg
-int 21h  
-;;;;;;;;;;;move to second  page
+checkaTOzsmall2:
+   mov al,'z'
+    cmp dl,al     ;check if between a,z   
+    jbe LOOPL 
+    mov wrongname2flag,1
+    jmp tryagainname2
+
+
 LOOPL:
 mov ah,0
 int 16h  
@@ -137,8 +208,11 @@ mov bl,28
 cmp ah, bl 
 jNz LOOPL ; Clear the screen 
 lopp:
+mov ah,00
+mov al,03
+int 10h
 mov ax,0600h
-mov bh,3eh  ;fore yellow/back blue 
+mov bh,3eh ;fore yellow/back blue 
 mov cx,0 ;start
 mov dx,184FH ;end
 int 10h
@@ -190,17 +264,21 @@ MOV AH,4CH
 INT 21H
 continue:
 ;;;;;;;;;;;;;;;;;;;;;
-MOV AX,0A000h
-   MOV ES,AX
- mov ah,0    
-     mov al,13h  ;GRAPHICS
-     INT 10H  
-     
-      mov aX, 0600h ;bacground
-      mov bh, 196
-      mov cx, 0000h
-      mov dx, 184Fh       
-      int 10h 
+MOV AX, 0A000h
+MOV ES, AX
+
+; Set video mode 13h (graphics mode)
+mov ax, 0013h
+mov bh,0
+int 10h
+
+mov ax, 0600h ; Set background color
+mov bh, 196
+mov cx, 0000h
+mov dx, 184Fh
+int 10h       ; Clear the screen in video page 1
+
+; Clear the screen in video page 0
       ;call game
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       mov aX, 0600h ;bacground
@@ -208,10 +286,8 @@ MOV AX,0A000h
       mov cx, 1200h
       mov dx, 154fh       
       int 10h 
-      ;;;;;;;;;;;
-      
-      call displayInitialTime
-      
+      ;;;;;;;;;;;      
+      call displayInitialTime      
       ;;;;;;;;;;;;;;;;
         MOV AH,0CH
         MOV AL,14 
@@ -223,54 +299,32 @@ MOV AX,0A000h
      cmp cx,320
      jnz here   
      ;;;;;;;;;;;;;;;;;;;;;;;
-     MOV AH,02  
-    MOV BH,00  ;page    
+    MOV AH,02  
+    MOV BH,0  ;page    
     MOV DL,0  ;column  
     MOV DH,23  ;row 
     INT 10H 
-
     mov ah,9
-
-        mov dx,offset startChatMsg
+    mov dx,offset startChatMsg
     int 21h
-      mov DI,46720
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;z&z
-     
-    MOV SI,offset leftcaringame
-    
-    MOV DX,20
-
-    REPEAT3:
-    MOV CX,33
-REP MOVSB
-ADD DI,SCREEN_WIDTH-33
-DEC DX
-JNZ REPEAT3
+    mov DI,46720
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;z&z
+    call drawleftcarinstatus
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 mov Di ,46675
-MOV SI,offset rightcar
-  MOV DX,20
-    REPEAT2:
-    MOV CX,37
-REP MOVSB
-ADD DI,SCREEN_WIDTH-37
-DEC DX
-JNZ REPEAT2
-
-
+call drawrightcarinstatus
         mov pos_box1, 321
         mov pos_box2, 333
-    
-        
+           
         call drawTrack
         call initialize_cars
+        call randompoweratbegining
+      
         call set_interrupt
         ;;;;;;;;;;;;;;play
         call play
         call ret_interrupt    
-        
-  ;call getwinner
-  
+          
       ret
 game endp
 
@@ -468,21 +522,6 @@ move_b1            proc
                         cmp [KeyList + 48h] ,1
                         jnz down
                     ; ------- checks first  --------------;
-                    ; ----- first check "track check top right corner"------;
-                    push cx
-                    push si
-                    mov cx,pixel_size
-                    mov di,pos_box1
-                    sub di,k
-                    mov si,offset color_path
-                    obstacle_hit_u1:
-                                    cmpsb 
-                                    jnz temp_again_u1
-                                    dec si
-                                    dec cx
-                                    jnz obstacle_hit_u1
-                    
-                    pop cx ; no pop si It will be popped later
                     ; ----- third check ------;
                     third_check_up1:
                     mov si, pos_box2
@@ -491,7 +530,7 @@ move_b1            proc
                     add si,k*(pixel_size - 1)
                     add si,pixel_size - 1
                     cmp di,si
-                    ja all_good_up1
+                    ja rest_ofchecks_u1
                     ; ----- fourth check -----;
                     fourth_check_up1:
                     mov di,pos_box1
@@ -500,10 +539,79 @@ move_b1            proc
                     sub di,k
                     add di,pixel_size - 1
                     cmp di,si
-                    jb all_good_up1
-                    pop si
+                    jb rest_ofchecks_u1
                     jmp terminate1
                     ; ------------------------- ;
+                    ; ----- first check "track check top right corner"------;
+                    rest_ofchecks_u1:
+                    push si
+                    push cx
+                    mov cx,pixel_size
+                    mov di,pos_box1
+                    sub di,k
+                    obstacle_hit_u1:
+                                    mov si,offset color_path
+                                    cmpsb 
+                                    jz cont_u1
+                                    mov si,offset color_track
+                                    dec di
+                                    cmpsb
+                                    jz end_move_1
+                                    mov si,offset color_endline
+                                    dec di
+                                    cmpsb
+                                    jnz complete_u1
+                                    inc counter_end
+                                    jmp cont_u1
+                                    complete_u1:
+                                    push di
+                                    mov di,pos_box1
+                                    sub di,k
+                                    mov powerupcar, 1                                    
+                                    mov si,offset obstacle_color
+                                    call check_obstacle
+                                    pop di
+                                    cmp powerupchooser,0
+                                    jnz call_forpowers_u1 ; if power ups
+                                    cmp passobstacle_c1,1 ; it is obstacles
+                                    jnz end_move_1
+                                    cmp startobstaclepos_c1, 0
+                                    jnz cont_u1
+                                    mov startobstaclepos_c1,di
+                                    dec startobstaclepos_c1
+                                    sub startobstaclepos_c1, k*(lengthObstacle - 2)
+                                    push di
+                                    mov di,startobstaclepos_c1
+                                    mov temp_current_pass, 1
+                                    call scan_left_o
+                                    pop di
+                                    jmp here_u1
+                                    call_forpowers_u1:
+                                                    mov prevdicar1,di
+                                                    dec prevdicar1
+                                                    sub prevdicar1, k*(pixel_size-1)
+                                                    push di
+                                                    mov di,prevdicar1
+                                                    push cx
+                                                    mov cl, es:[di]
+                                                    mov temp_color_powerup, cl
+                                                    pop cx
+                                                    call scan_left_p
+                                                    pop di
+                                                    call gotpowerup
+                                                    jmp here_u1
+                                    cont_u1: 
+                                            dec cx
+                                            jnz obstacle_hit_u1
+                    here_u1:
+                    mov cx, counter_end
+                    cmp cx, pixel_size
+                    jnz lesa_u1
+                    mov winer , 1
+                    lesa_u1:
+                    mov counter_end,0
+                    pop cx ; no pop si It will be popped later
+                    
                     all_good_up1:
                         pop si
                         mov di, pos_box1
@@ -531,6 +639,11 @@ move_b1            proc
                         call rotate_up ; draw line at the beginning as if move up
                         pop di ; set new value of di
                         mov pos_box1,di
+                        cmp startobstaclepos_c1, 0
+                        jz endmove
+                        call obstaclepassbackup 
+                        call draw_c
+                        call undo_obstacle_1
                         jmp endmove
 
                         down: 
@@ -538,20 +651,6 @@ move_b1            proc
                         jnz right
                          ; ------- checks first  --------------;
                     ; ----- first check "track check top right corner"------;
-                    push cx
-                    push si
-                    mov cx,pixel_size
-                    mov di,pos_box1
-                    add di,k*pixel_size
-                    mov si,offset color_path
-                    obstacle_hit_d1:
-                                    cmpsb 
-                                    jnz temp_again_d1
-                                    dec si
-                                    dec cx
-                                    jnz obstacle_hit_d1
-                    
-                    pop cx ; no pop si It will be popped later
                     ; ----- third check ------;
                     third_check_down1:
                     mov si, pos_box2
@@ -559,7 +658,7 @@ move_b1            proc
                     add di,k*pixel_size
                     add si,pixel_size - 1
                     cmp di,si
-                    ja all_good_down1
+                    ja rest_ofchecks_d1
                     ; ----- fourth check -----;
                     fourth_check_down1:
                     mov di,pos_box1
@@ -567,9 +666,75 @@ move_b1            proc
                     add di,k*(pixel_size)
                     add di,pixel_size - 1
                     cmp di,si
-                    jb all_good_down1
-                    pop si
+                    jb rest_ofchecks_d1
                     jmp terminate1
+
+                    rest_ofchecks_d1:
+                    push si
+                    push cx
+                    mov cx,pixel_size
+                    mov di,pos_box1
+                    add di,k*pixel_size
+                    obstacle_hit_d1:
+                                    mov si,offset color_path
+                                    cmpsb 
+                                    jz cont_d1
+                                    mov si,offset color_track
+                                    dec di
+                                    cmpsb
+                                    jz end_move_1
+                                    mov si,offset color_endline
+                                    dec di
+                                    cmpsb
+                                    jnz complete_d1
+                                    inc counter_end
+                                    jmp cont_d1
+                                    complete_d1:
+                                    push di
+                                    mov di,pos_box1
+                                    add di,k*pixel_size
+                                    mov powerupcar, 1
+                                    mov si,offset obstacle_color
+                                    call check_obstacle
+                                    pop di
+                                    cmp powerupchooser,0
+                                    jnz call_forpowers_d1 ; if power ups
+                                    cmp passobstacle_c1,1 ; it is obstacles
+                                    jnz end_move_1
+                                    cmp startobstaclepos_c1, 0
+                                    jnz cont_d1
+                                    mov startobstaclepos_c1,di
+                                    dec startobstaclepos_c1
+                                    push di
+                                    mov di,startobstaclepos_c1
+                                    mov temp_current_pass, 1
+                                    call scan_left_o
+                                    pop di
+                                    jmp here_d1
+                                    call_forpowers_d1:
+                                                    mov prevdicar1,di
+                                                    dec prevdicar1
+                                                    push di
+                                                    mov di,prevdicar1
+                                                    push cx
+                                                    mov cl, es:[di]
+                                                    mov temp_color_powerup, cl
+                                                    pop cx
+                                                    call scan_left_p
+                                                    pop di
+                                                    call gotpowerup
+                                                    jmp here_d1
+                                    cont_d1:
+                                            dec cx
+                                            jnz obstacle_hit_d1
+                    here_d1:
+                    mov cx, counter_end
+                    cmp cx, pixel_size
+                    jnz lesa_d1
+                    mov winer , 1
+                    lesa_d1:
+                    mov counter_end,0
+                    pop cx ; no pop si It will be popped later
                     ; ------------------------- ;
                     all_good_down1:
                         pop si
@@ -598,6 +763,11 @@ move_b1            proc
                         call draw_c ; draw horizontal line at the end
                         pop di
                         mov pos_box1,di ; set the new position 
+                        cmp startobstaclepos_c1,0
+                        jz endmove
+                        call obstaclepassbackup
+                        call draw_c
+                        call undo_obstacle_1                                   
                         jmp endmove
                       ; --- right --- ;
                         right: 
@@ -605,24 +775,7 @@ move_b1            proc
                         jnz temp_left 
                 ; ------- checks first  --------------;
                 ; ---- Track colors check ------------;
-                    push cx
-                    push si
-                    mov cx,pixel_size
-                    mov di,pos_box1
-                    add di,pixel_size
-                    mov si,offset color_path
-                    obstacle_hit_r1:
-                                    cmpsb 
-                                    jnz temp_again_r1
-                                    dec di
-                                    dec si
-                                    add di,k
-                                    dec cx
-                                    jnz obstacle_hit_r1
-                    
-                    pop si
-                    pop cx
-                ; -------------------------------------- ;
+                    ; -------------------------------------- ;
                     mov di,pos_box1
                     mov si,pos_box2
                     add di,pixel_size
@@ -634,35 +787,11 @@ move_b1            proc
                     mov cx,k
                     div cx
                     cmp dx,0 ; there is no remainder meaning on the same vertcal line
-                    jne all_good_right1
+                    jne rest_ofchecks_r1
                     cmp ax,pixel_size
-                    ja  all_good_right1
+                    ja  rest_ofchecks_r1
                     jmp terminate1
                     temp_left: jmp left
-                    
-                    temp_again1:
-                            pop si
-                            pop cx
-                            mov si,offset obstacle_color
-                            mov powerupcar,1
-                            call check_obstacle
-                            cmp powerupchooser, 0
-                            jz terminate1
-                            pop di
-                            call gotpowerup
-                            jmp endmove
-                    temp_again11:
-                            pop si
-                            pop cx
-                            mov si,offset obstacle_color
-                            mov powerupcar,1
-                            call check_obstacle2
-                            cmp powerupchooser, 0
-                            jz terminate1
-                            pop di
-                            call gotpowerup
-                            jmp endmove
-                            jmp move_box
                     fourth_check_r1:
                     sub di,si
                     mov ax,di
@@ -670,30 +799,81 @@ move_b1            proc
                     mov cx,k
                     div cx
                     cmp dx,0 ; there is no remainder meaning on the same vertcal line
-                    jne all_good_right1
+                    jne rest_ofchecks_r1
                     cmp ax,pixel_size ; not on the same horizontal line
-                    ja  all_good_right1
+                    ja  rest_ofchecks_r1
                     jmp terminate1
-                    ; --- all temp againssss -- ;
-                    temp_again_u1 :
-                            mov di,pos_box1
-                            sub di,k
-                            jmp temp_again1
                     
-                    temp_again_d1 :
-                            mov di,pos_box1
-                            add di,k*pixel_size
-                            jmp temp_again1
-                    temp_again_r1 :
-                            mov di,pos_box1
-                            add di,pixel_size
-                            jmp temp_again11
-                    
-                    temp_again_l1 :
-                            mov di,pos_box1
-                            dec di
-                            jmp temp_again11
-                    ; end temp agains  --- ;
+                    rest_ofchecks_r1:
+                    push si
+                    push cx
+                    mov cx,pixel_size
+                    mov di,pos_box1
+                    add di,pixel_size
+                    obstacle_hit_r1:
+                                    mov si,offset color_path
+                                    cmpsb 
+                                    jz cont_r1
+                                    mov si,offset color_track
+                                    dec di
+                                    cmpsb
+                                    jz end_move_1
+                                    mov si,offset color_endline
+                                    dec di
+                                    cmpsb
+                                    jnz complete_r1
+                                    inc counter_end
+                                    jmp cont_r1
+                                    complete_r1:
+                                    push di
+                                    mov di,pos_box1
+                                    add di,pixel_size
+                                    mov powerupcar, 1
+                                    mov si,offset obstacle_color
+                                    call check_obstacle2
+                                    pop di
+                                    cmp powerupchooser,0
+                                    jnz call_forpowers_r1 ; if power ups
+                                    cmp passobstacle_c1,1 ; it is obstacles
+                                    jnz end_move_1
+                                    cmp startobstaclepos_c1, 0
+                                    jnz cont_r1
+                                    mov startobstaclepos_c1,di
+                                    dec startobstaclepos_c1
+                                    push di
+                                    mov di,startobstaclepos_c1
+                                    mov temp_current_pass, 1
+                                    call scan_up_o
+                                    pop di
+                                    jmp here_r1
+                                    call_forpowers_r1:
+                                                    mov prevdicar1,di
+                                                    dec prevdicar1
+                                                    push di
+                                                    mov di,prevdicar1
+                                                    push cx
+                                                    mov cl, es:[di]
+                                                    mov temp_color_powerup, cl
+                                                    pop cx
+                                                    call scan_up_p
+                                                    pop di
+                                                    call gotpowerup
+                                                    jmp here_r1
+                                    cont_r1:
+                                            dec di
+                                            add di,k
+                                            dec cx
+                                            jnz obstacle_hit_r1
+                    here_r1:
+                    mov cx, counter_end
+                    cmp cx, pixel_size
+                    jnz lesa_r1
+                    mov winer , 1
+                    lesa_r1:
+                    mov counter_end,0
+                    pop cx
+                    pop si
+                
                 ; -------------------------------------- ;
                     all_good_right1:
                         mov di, pos_box1
@@ -722,31 +902,17 @@ move_b1            proc
                         mov si,offset redcar
                         call rotate_right
                         mov pos_box1,di
+                        cmp startobstaclepos_c1,0
+                        jz endmove
+                        call obstaclepassbackup
+                        call draw_c
+                        call undo_obstacle_1
                         jmp endmove
                     ; --- left --- ;
                         left: 
                         cmp [KeyList + 4Bh] ,1
                         jnz box2switchmid
                 ; ---- Track colors check ------------;
-                    push cx
-                    push si
-                    mov cx,pixel_size
-                    mov di,pos_box1
-                    dec di
-                    mov si,offset color_path
-                    obstacle_hit_l1:
-                                    cmpsb 
-                                    jnz temp_again_l1
-                                    dec di
-                                    dec si
-                                    add di,k
-                                    dec cx
-                                    jnz obstacle_hit_l1
-                    
-                    pop si
-                    pop cx
-                ; -------------------------------------- ;
-                ; ------------first car check--------------------- ;
                     mov di,pos_box2
                     mov si,pos_box1
                     add di,pixel_size
@@ -758,9 +924,9 @@ move_b1            proc
                     mov cx,k
                     div cx
                     cmp dx,0 ; there is no remainder meaning on the same vertcal line
-                    jne all_good_left1
+                    jne rest_ofchecks_l1
                     cmp ax,pixel_size
-                    ja  all_good_left1
+                    ja  rest_ofchecks_l1
                     jmp terminate1
                     box2switchmid:jmp terminate1
                     fourth_check_l1:
@@ -770,10 +936,87 @@ move_b1            proc
                     mov cx,k
                     div cx
                     cmp dx,0 ; there is no remainder meaning on the same vertcal line
-                    jne all_good_left1
+                    jne rest_ofchecks_l1
                     cmp ax,pixel_size ; not on the same horizontal line
-                    ja  all_good_left1
+                    ja  rest_ofchecks_l1
                     jmp terminate1
+                    rest_ofchecks_l1:
+                        push si
+                        push cx
+                        mov cx,pixel_size
+                        mov di,pos_box1
+                        dec di
+                        obstacle_hit_l1:
+                                    mov si,offset color_path
+                                    cmpsb 
+                                    jz cont_l1
+                                    mov si,offset color_track
+                                    dec di
+                                    cmpsb
+                                    jz end_move_1
+                                    mov si,offset color_endline
+                                    dec di
+                                    cmpsb
+                                    jnz complete_l1
+                                    inc counter_end
+                                    jmp cont_l1
+                                    complete_l1:
+                                    push di
+                                    mov di,pos_box1
+                                    dec di
+                                    mov powerupcar, 1
+                                    mov si,offset obstacle_color
+                                    call check_obstacle2
+                                    pop di
+                                    cmp powerupchooser,0
+                                    jnz call_forpowers_l1 ; if power ups
+                                    cmp passobstacle_c1,1 ; it is obstacles
+                                    jnz end_move_1
+                                    cmp startobstaclepos_c1, 0
+                                    jnz cont_l1
+                                    mov startobstaclepos_c1,di
+                                    sub startobstaclepos_c1, (lengthObstacle - 1)
+                                    mov temp_current_pass, 1
+                                    push di
+                                    mov di,startobstaclepos_c1
+                                    call scan_up_o
+                                    mov di,startobstaclepos_c1
+                                    call scan_left_o
+                                    pop di
+                                    jmp here_l1
+                                    call_forpowers_l1:
+                                                    mov prevdicar1,di
+                                                    sub prevdicar1, (pixel_size - 1)
+                                                    push di
+                                                    mov di,prevdicar1
+                                                    push cx
+                                                    mov cl, es:[di]
+                                                    mov temp_color_powerup, cl
+                                                    call scan_up_p
+                                                    mov di,prevdicar1
+                                                    mov cl, es:[di]
+                                                    mov temp_color_powerup, cl
+                                                    call scan_left_p
+                                                    pop di
+                                                    pop cx
+                                                    call gotpowerup
+                                                    jmp here_l1
+                                    cont_l1:
+                                    dec di
+                                    add di,k
+                                    dec cx
+                                    jnz obstacle_hit_l1
+                        here_l1:
+                        mov cx, counter_end
+                        cmp cx, pixel_size
+                        jnz lesa_l1
+                        mov winer , 1
+                        lesa_l1:
+                        mov counter_end,0
+                        pop cx
+                        pop si
+                ; -------------------------------------- ;
+                ; ------------first car check--------------------- ;
                     ;---- END of checks --------; 
                     all_good_left1:
                         mov di, pos_box1
@@ -803,8 +1046,15 @@ move_b1            proc
                         mov si,offset redcar
                         call rotate_left
                         mov pos_box1,di
+                        cmp startobstaclepos_c1,0
+                        jz endmove
+                        call obstaclepassbackup
+                        call draw_c
+                        call undo_obstacle_1
                         jmp endmove
-
+                    end_move_1:
+                        pop cx
+                        pop si
                     terminate1:
                         pop di
                     endmove:
@@ -813,7 +1063,7 @@ move_b1            proc
 move_b1             endp
 ; ------------------------------- ;
 move_b2            proc
-            ; --- push vlues that will be updated -- ;
+            ; --- push values that will be updated -- ;
                 push di
                 push ax
                 push cx
@@ -826,22 +1076,6 @@ move_b2            proc
                     cmp [KeyList + 11h],1 ; up key
                     jnz down2
                 ; ------- checks first  --------------;
-                ; ----- first check "track check top right corner"------;
-                    push cx
-                    push si
-                    mov cx,pixel_size
-                    mov di,pos_box2
-                    sub di,k
-                    mov si,offset color_path
-                    obstacle_hit_u2:
-                                    cmpsb 
-                                    jnz temp_again_u2
-                                    dec si
-                                    dec cx
-                                    jnz obstacle_hit_u2
-                    
-                    pop cx ; no pop si It will be popped later
-                    ; ----- third check ------;
                     third_check_up2:
                     mov si, pos_box1
                     mov di,pos_box2
@@ -849,7 +1083,7 @@ move_b2            proc
                     add si,k*(pixel_size - 1)
                     add si,pixel_size - 1
                     cmp di,si
-                    ja all_good_up2
+                    ja rest_ofchecks_u2
                     ; ----- fourth check -----;
                     fourth_check_up2:
                     mov di,pos_box2
@@ -858,29 +1092,79 @@ move_b2            proc
                     sub di,k
                     add di,pixel_size - 1
                     cmp di,si
-                    jb all_good_up2
-                    pop si
+                    jb rest_ofchecks_u2
                     jmp terminate2
-                    ; --- all temp againssss -- ;
-                    temp_again_u2 :
-                            mov di,pos_box2
-                            sub di,k
-                            jmp temp_again2
-                    
-                    temp_again_d2 :
-                            mov di,pos_box2
-                            add di,k*pixel_size
-                            jmp temp_again2
-                    temp_again_r2 :
-                            mov di,pos_box2
-                            add di,pixel_size
-                            jmp temp_again22
-                    
-                    temp_again_l2 :
-                            mov di,pos_box2
-                            sub di, 1
-                            jmp temp_again22
-                    ; end temp agains  --- ;
+                ; ----- first check "track check top right corner"------;
+                    rest_ofchecks_u2:
+                    push si
+                    push cx
+                    mov cx,pixel_size
+                    mov di,pos_box2
+                    sub di,k
+                    obstacle_hit_u2:
+                                    mov si,offset color_path
+                                    cmpsb 
+                                    jz cont_u2
+                                    mov si,offset color_track
+                                    dec di
+                                    cmpsb
+                                    jz end_move_2
+                                    mov si,offset color_endline
+                                    dec di
+                                    cmpsb
+                                    jnz complete_u2
+                                    inc counter_end_2
+                                    jmp cont_u2
+                                    complete_u2:
+                                    push di
+                                    mov di,pos_box2
+                                    sub di,k
+                                    mov powerupcar, 2
+                                    mov si,offset obstacle_color
+                                    call check_obstacle
+                                    pop di
+                                    cmp powerupchooser,0
+                                    jnz call_forpowers_u2 ; if power ups
+                                    cmp passobstacle_c2,1 ; it is obstacles
+                                    jnz end_move_2
+                                    cmp startobstaclepos_c2, 0
+                                    jnz cont_u2
+                                    mov startobstaclepos_c2,di
+                                    dec startobstaclepos_c2
+                                    sub startobstaclepos_c2, k*(lengthObstacle - 2)
+                                    push di
+                                    mov di,startobstaclepos_c2
+                                    mov temp_current_pass, 2
+                                    call scan_left_o
+                                    pop di
+                                    jmp here_u2
+                                    call_forpowers_u2:
+                                                    mov prevdicar2,di
+                                                    dec prevdicar2
+                                                    sub prevdicar2, k*(pixel_size - 1)
+                                                    push di
+                                                    mov di,prevdicar2
+                                                    push cx
+                                                    mov cl, es:[di]
+                                                    mov temp_color_powerup, cl
+                                                    pop cx
+                                                    call scan_left_p
+                                                    pop di
+                                                    call gotpowerup
+                                                    jmp here_u2
+                                    cont_u2: 
+                                            dec cx
+                                            jnz obstacle_hit_u2
+                    here_u2:
+                    mov cx, counter_end_2
+                    cmp cx, pixel_size
+                    jnz lesa_u2
+                    mov winer , 2
+                    lesa_u2:
+                    mov counter_end_2,0
+                    pop cx ; no pop si It will be popped later
+                    jmp all_good_up2
+                    ; ----- third check ------;
                     ; ------------------------- ;
                     all_good_up2:
                         pop si
@@ -902,7 +1186,7 @@ move_b2            proc
                                     mov al,color_path ; "MAY BE CHANGED BASED ON BACKGROUND COLOR."
                                     mov cx,pixel_size ; 8 times size of row
                                     rep stosb
-                                    
+
                         pop di
                         sub di,k   ; new  start position
                         push di ; save new start position
@@ -910,6 +1194,11 @@ move_b2            proc
                         call rotate_up ; draw line at the beginning as if move up
                         pop di ; set new value of di
                         mov pos_box2,di
+                        cmp startobstaclepos_c2, 0
+                        jz endmove2 
+                        call obstaclepassbackup 
+                        call draw_c
+                        call undo_obstacle_2  
                         jmp endmove2
             ; ---------- LET'S MOVE DOWN ------------------ ;
                     down2: 
@@ -917,29 +1206,13 @@ move_b2            proc
                         jnz right2
 
                             ; ------- checks first  --------------;
-                        ; ----- first check "track check top right corner"------;
-                        push cx
-                        push si
-                        mov cx,pixel_size
-                        mov di,pos_box2
-                        add di,k*pixel_size
-                        mov si,offset color_path
-                        obstacle_hit_d2:
-                                        cmpsb 
-                                        jnz temp_again_d2
-                                        dec si
-                                        dec cx
-                                        jnz obstacle_hit_d2
-                        
-                        pop cx ; no pop si It will be popped later
-                        ; ----- third check ------;
                         third_check_down2:
                         mov si, pos_box1
                         mov di,pos_box2
                         add di,k*pixel_size
                         add si,pixel_size - 1
                         cmp di,si
-                        ja all_good_down2
+                        ja rest_ofchecks_d2
                         ; ----- fourth check -----;
                         fourth_check_down2:
                         mov di,pos_box2
@@ -947,9 +1220,76 @@ move_b2            proc
                         add di,k*(pixel_size)
                         add di,pixel_size - 1
                         cmp di,si
-                        jb all_good_down2
-                        pop si
+                        jb rest_ofchecks_d2
                         jmp terminate2
+                        ; ----- first check "track check top right corner"------;
+                    rest_ofchecks_d2:
+                        push si
+                        push cx
+                        mov cx,pixel_size
+                        mov di,pos_box2
+                        add di,k*pixel_size
+                        obstacle_hit_d2:
+                                    mov si,offset color_path
+                                    cmpsb 
+                                    jz cont_d2
+                                    mov si,offset color_track
+                                    dec di
+                                    cmpsb
+                                    jz end_move_2
+                                    mov si,offset color_endline
+                                    dec di
+                                    cmpsb
+                                    jnz complete_d2
+                                    inc counter_end_2
+                                    jmp cont_d2
+                                    complete_d2:
+                                    push di
+                                    mov di,pos_box2
+                                    add di,k*pixel_size
+                                    mov powerupcar, 2
+                                    mov si,offset obstacle_color
+                                    call check_obstacle
+                                    pop di
+                                    cmp powerupchooser,0
+                                    jnz call_forpowers_d2 ; if power ups
+                                    cmp passobstacle_c2,1 ; it is obstacles
+                                    jnz end_move_2
+                                    cmp startobstaclepos_c2, 0
+                                    jnz cont_d2
+                                    mov startobstaclepos_c2,di
+                                    dec startobstaclepos_c2
+                                    push di
+                                    mov di,startobstaclepos_c2
+                                    mov temp_current_pass, 2
+                                    call scan_left_o
+                                    pop di
+                                    jmp here_d2
+                                    call_forpowers_d2:
+                                                    mov prevdicar2,di
+                                                    dec prevdicar2
+                                                    push di
+                                                    mov di,prevdicar2
+                                                    push cx
+                                                    mov cl, es:[di]
+                                                    mov temp_color_powerup, cl
+                                                    pop cx
+                                                    call scan_left_p
+                                                    pop di
+                                                    call gotpowerup
+                                                    jmp here_d2
+                                    cont_d2:
+                                            dec cx
+                                            jnz obstacle_hit_d2
+                        here_d2:
+                        mov cx, counter_end_2
+                        cmp cx, pixel_size
+                        jnz lesa_d2
+                        mov winer , 2
+                        lesa_d2:
+                        mov counter_end_2,0
+                        pop cx ; no pop si It will be popped later
+                        ; ----- third check ------;
                         ; ------------------------- ;
                         all_good_down2:
                             pop si
@@ -979,31 +1319,18 @@ move_b2            proc
                             call draw_c ; draw horizontal line at the end
                             pop di
                             mov pos_box2,di ; set the new position 
+                            ; added part for obstacle pass ;
+                            cmp startobstaclepos_c2,0
+                            jz endmove2
+                            call obstaclepassbackup
+                            call draw_c
+                            call undo_obstacle_2                                    
                             jmp endmove2
                 ;---------------- LETS MOVE RIGHT   --- ;
                     right2: 
                         cmp [KeyList + 20h],1 ; right key
                         jnz temp_left2
                 ; ---- Track colors check ------------;
-                        push cx
-                        push si
-                        mov cx,pixel_size
-                        mov di,pos_box2
-                        add di,pixel_size
-                        mov si,offset color_path
-                        obstacle_hit_r2:
-                                        cmpsb 
-                                        jnz temp_again_r2
-                                        dec di
-                                        dec si
-                                        add di,k
-                                        dec cx
-                                        jnz obstacle_hit_r2
-                        
-                        pop si
-                        pop cx
-                    ; -------------------------------------- ;
-                    ; ------------first car check--------------------- ;
                         mov di,pos_box2
                         mov si,pos_box1
                         add di,pixel_size
@@ -1015,33 +1342,11 @@ move_b2            proc
                         mov cx,k
                         div cx
                         cmp dx,0 ; there is no remainder meaning on the same vertcal line
-                        jne all_good_right2
+                        jne rest_ofchecks_r2
                         cmp ax,pixel_size
-                        ja  all_good_right2
+                        ja  rest_ofchecks_r2
                         jmp terminate2
                         temp_left2: jmp left2
-                        temp_again2: 
-                            pop si
-                            pop cx
-                            mov si,offset obstacle_color
-                            mov powerupcar,2
-                            call check_obstacle
-                            cmp powerupchooser, 0
-                            jz terminate2
-                            pop di
-                            call gotpowerup
-                            jmp endmove2
-                        temp_again22: 
-                            pop si
-                            pop cx
-                            mov si,offset obstacle_color
-                            mov powerupcar,2
-                            call check_obstacle2
-                            cmp powerupchooser, 0
-                            jz terminate2
-                            pop di
-                            call gotpowerup
-                            jmp endmove2
                         fourth_check_r2:
                         sub di,si
                         mov ax,di
@@ -1049,10 +1354,81 @@ move_b2            proc
                         mov cx,k
                         div cx
                         cmp dx,0 ; there is no remainder meaning on the same vertcal line
-                        jne all_good_right2
+                        jne rest_ofchecks_r2
                         cmp ax,pixel_size ; not on the same horizontal line
-                        ja  all_good_right2
+                        ja  rest_ofchecks_r2
                         jmp terminate2
+                    rest_ofchecks_r2:
+                        push si
+                        push cx
+                        mov cx,pixel_size
+                        mov di,pos_box2
+                        add di,pixel_size
+                        obstacle_hit_r2:
+                                    mov si,offset color_path
+                                    cmpsb 
+                                    jz cont_r2
+                                    mov si,offset color_track
+                                    dec di
+                                    cmpsb
+                                    jz end_move_2
+                                    mov si,offset color_endline
+                                    dec di
+                                    cmpsb
+                                    jnz complete_r2
+                                    inc counter_end_2
+                                    jmp cont_r2
+                                    complete_r2:
+                                    push di
+                                    mov di,pos_box2
+                                    add di,pixel_size
+                                    mov powerupcar, 2
+                                    mov si,offset obstacle_color
+                                    call check_obstacle2
+                                    pop di
+                                    cmp powerupchooser,0
+                                    jnz call_forpowers_r2 ; if power ups
+                                    cmp passobstacle_c2,1 ; it is obstacles
+                                    jnz end_move_2
+                                    cmp startobstaclepos_c2, 0
+                                    jnz cont_r2
+                                    mov startobstaclepos_c2,di
+                                    dec startobstaclepos_c2
+                                    push di
+                                    mov di,startobstaclepos_c2
+                                    mov temp_current_pass, 2
+                                    call scan_up_o
+                                    pop di
+                                    jmp here_r2
+                                    call_forpowers_r2:
+                                                    mov prevdicar2,di
+                                                    dec prevdicar2
+                                                    push di
+                                                    mov di,prevdicar2
+                                                    push cx
+                                                    mov cl, es:[di]
+                                                    mov temp_color_powerup, cl
+                                                    pop cx
+                                                    call scan_up_p
+                                                    pop di
+                                                    call gotpowerup
+                                                    jmp here_r2
+                                    cont_r2:
+                                            dec di
+                                            add di,k
+                                            dec cx
+                                            jnz obstacle_hit_r2
+                        here_r2:
+                        mov cx, counter_end_2
+                        cmp cx, pixel_size
+                        jnz lesa_r2
+                        mov winer , 2
+                        lesa_r2:
+                        mov counter_end_2,0
+                        pop cx
+                        pop si
+                    ; -------------------------------------- ;
+                    ; ------------first car check--------------------- ;
                         ;---- END of checks --------;  
                         all_good_right2:
                             mov di, pos_box2
@@ -1084,6 +1460,12 @@ move_b2            proc
                             call rotate_right
                             pop di
                             mov pos_box2,di
+                            ; added part for obstacle pass ;
+                            cmp startobstaclepos_c2,0
+                            jz endmove2
+                            call obstaclepassbackup
+                            call draw_c
+                            call undo_obstacle_2  
                             jmp endmove2
                             tempppp3: jmp terminate2
                      ; --- left --- ;
@@ -1091,25 +1473,6 @@ move_b2            proc
                     cmp [KeyList + 1Eh],1 ; left key
                     jnz tempppp3
                 ; ---- Track colors check ------------;
-                        push cx
-                        push si
-                        mov cx,pixel_size
-                        mov di,pos_box2
-                        dec di
-                        mov si,offset color_path
-                        obstacle_hit_l2:
-                                        cmpsb 
-                                        jnz temp_again_l2
-                                        dec di
-                                        dec si
-                                        add di,k
-                                        dec cx
-                                        jnz obstacle_hit_l2
-                        
-                        pop si
-                        pop cx
-                    ; -------------------------------------- ;
-                    ; -------------------------------------- ;
                         mov di,pos_box1
                         mov si,pos_box2
                         add di,pixel_size
@@ -1121,9 +1484,9 @@ move_b2            proc
                         mov cx,k
                         div cx
                         cmp dx,0 ; there is no remainder meaning on the same vertcal line
-                        jne all_good_left2
+                        jne rest_ofchecks_l2
                         cmp ax,pixel_size
-                        ja  all_good_left2
+                        ja  rest_ofchecks_l2
                         jmp terminate2
                         fourth_check_l2:
                         sub di,si
@@ -1132,10 +1495,87 @@ move_b2            proc
                         mov cx,k
                         div cx
                         cmp dx,0 ; there is no remainder meaning on the same vertcal line
-                        jne all_good_left2
+                        jne rest_ofchecks_l2
                         cmp ax,pixel_size ; not on the same horizontal line
-                        ja  all_good_left2
+                        ja  rest_ofchecks_l2
                         jmp terminate2
+
+                        rest_ofchecks_l2:
+                        push si
+                        push cx
+                        mov cx,pixel_size
+                        mov di,pos_box2
+                        dec di
+                        obstacle_hit_l2:
+                                    mov si,offset color_path
+                                    cmpsb 
+                                    jz cont_l2
+                                    mov si,offset color_track
+                                    dec di
+                                    cmpsb
+                                    jz end_move_2
+                                    mov si,offset color_endline
+                                    dec di
+                                    cmpsb
+                                    jnz complete_l2
+                                    inc counter_end_2
+                                    jmp cont_l2
+                                    complete_l2:
+                                    push di
+                                    mov di,pos_box2
+                                    dec di
+                                    mov powerupcar, 2
+                                    mov si,offset obstacle_color
+                                    call check_obstacle2
+                                    pop di
+                                    cmp powerupchooser,0
+                                    jnz call_forpowers_l2 ; if power ups
+                                    cmp passobstacle_c2,1 ; it is obstacles
+                                    jnz end_move_2
+                                    cmp startobstaclepos_c2, 0
+                                    jnz cont_l2
+                                    mov startobstaclepos_c2,di
+                                    sub startobstaclepos_c2, (lengthObstacle - 1)
+                                    mov temp_current_pass, 2
+                                    push di
+                                    mov di,startobstaclepos_c2
+                                    call scan_up_o
+                                    mov di,startobstaclepos_c2
+                                    call scan_left_o
+                                    pop di
+                                    jmp here_l2
+                                    call_forpowers_l2:
+                                                    mov prevdicar2,di
+                                                    sub prevdicar2, (pixel_size - 1)
+                                                    push di
+                                                    mov di,prevdicar2
+                                                    push cx
+                                                    mov cl, es:[di]
+                                                    mov temp_color_powerup, cl
+                                                    call scan_up_p
+                                                    mov di,prevdicar2
+                                                    mov cl, es:[di]
+                                                    mov temp_color_powerup, cl
+                                                    call scan_left_p
+                                                    pop di
+                                                    pop cx
+                                                    call gotpowerup
+                                    cont_l2:
+                                    dec di
+                                    add di,k
+                                    dec cx
+                                    jnz obstacle_hit_l2
+                        here_l2:
+                        mov cx, counter_end_2
+                        cmp cx, pixel_size
+                        jnz lesa_l2
+                        mov winer , 2
+                        lesa_l2:
+                        mov counter_end_2,0
+                        pop cx
+                        pop si
+                    ; -------------------------------------- ;
+                    ; -------------------------------------- ;
                     ; -------------------------------------- ;
                         all_good_left2:
                             mov di, pos_box2
@@ -1167,7 +1607,16 @@ move_b2            proc
                             call rotate_left
                             pop di
                             mov pos_box2,di
+                            ; added part for obstacle pass ;
+                            cmp startobstaclepos_c2,0
+                            jz endmove2
+                            call obstaclepassbackup
+                            call draw_c
+                            call undo_obstacle_2
                             jmp endmove2
+                    end_move_2:
+                        pop cx
+                        pop si
                     terminate2:
                         pop di
                     endmove2:
@@ -1192,6 +1641,8 @@ play            proc
                         call move_b1
                         mov di,pos_box2
                         call move_b2
+                        cmp winer,0
+                        jnz endwin
                         call setcurrentsec
                         call check_poweractivation ; call to check if a car has activated its powers 
                         call markend ; time 
@@ -1205,18 +1656,25 @@ play            proc
                             call choosewhichTorender
                             mov powerupflag,0
                         jmp check_move
-                        endr:
-                        pop ax
-                        pop di
-                        ;call ret_interrupt
-                        call timeover
-                          
+                    endr:
+                    pop ax
+                    pop di
+                    call ret_interrupt
+                    call timeover
+                    jmp end_play
+                    endwin:
+                            pop ax
+                            pop di
+                            call ret_interrupt
+                            call getwinner
+                    end_play:     
                 ret
 play            endp
 
 ; ---------------- check obstacles --------------------------;
-check_obstacle proc ; input di-> cars,  si -> color_obstacle
+check_obstacle proc ; input di-> next line,  si -> color_obstacle
                 pusha
+                mov bx,di
                 mov cx,pixel_size
                 run_line:
                             cmpsb
@@ -1293,7 +1751,6 @@ check_poweractivation proc
                     jnz check_other
                     mov di,pos_box1
                     call activate_powers
-                    
                     check_other:
                                 cmp [KeyList + 9],1 ; code for second car power activation
                                 jnz end_check_powers
@@ -1316,8 +1773,8 @@ releasepowerups proc
                             jmp endrealeases1
                             trysecond:
                                         cmp currentpoweractivatedrforCar1,3
-                                        jnz endrealeases
-                                        mov sdelay_f_1, 2
+                                        jnz endrealeases1
+                                        mov sdelay_f_2, 2
                                         jmp endrealeases1
                 relasecar2:
                             cmp currentpoweractivatedrforCar2,1
@@ -1327,8 +1784,9 @@ releasepowerups proc
                             trysecond2:
                                         cmp currentpoweractivatedrforCar2,3
                                         jnz endrealeases2
-                                        mov sdelay_f_2, 2
+                                        mov sdelay_f_1, 2
                                         jmp endrealeases2
+                            
                 endrealeases1:
                             mov currentpoweractivatedrforCar1, 4
                             mov time_powerc1,0
@@ -1344,11 +1802,10 @@ releasepowerups proc
 releasepowerups endp
 ; ------------------------------------------------------------------------;
 my_delay proc 
-    
-     delay_loop:
-        dec cx          ; Decrement the delay count
-        jnz delay_loop  ; Jump back to the loop if CX is not zero
-    ret 
+        delay_loop:
+            dec cx          ; Decrement the delay count
+            jnz delay_loop  ; Jump back to the loop if CX is not zero
+        ret 
 my_delay endp
 ;---------------------------------------------;
 freeze_1 proc
@@ -1401,26 +1858,60 @@ activate_powers proc
                 jnz activatefor2 ; go to the second
                 avtivatefor1:
                             cmp currentpowerforCar1, 4 ; if there is a power up to use
-                            jz nochange ; else end it
+                            jz nochange1 ; else end it
                             mov di,pos_box1 ; adjust function parameters
                             call releasepowerups ;  
-                            mov powerc1activated, 1
+                            mov powerc1activated, 1 ; the power up of car one is on
                             cmp currentpowerforCar1,1
                             jnz try1 
+                            mov currentpowerforCar1, 4
                             call speedup1
+                            mov di,statuspowerleft
+                            call Noobstacleleft
                             mov currentpowerforCar1,4
-                            mov powerupcar1timer,0
+                            mov powerupcar1timer,0          
                             mov currentpoweractivatedrforCar1,1
                             jmp endpowers
                             try1: ; three decrease other car speed ; 
-                            cmp currentpowerforCar1, 3
-                            jnz nochange
-                            mov di,pos_box2
-                            mov currentpoweractivatedrforCar1,3
-                            call speeddown1
-                            mov currentpowerforCar1,4
-                            mov powerupcar1timer,0
-                            jmp endpowers
+                                cmp currentpowerforCar1, 3
+                                jnz try2
+                                mov currentpowerforCar1, 4
+                                mov di,pos_box1
+                                mov currentpoweractivatedrforCar1,3
+                                call speeddown1
+                                mov di,statuspowerleft
+                                call Noobstacleleft
+                                mov currentpowerforCar1,4
+                                mov powerupcar1timer,0
+                                jmp endpowers
+                            try2:
+                                cmp currentpowerforCar1, 0
+                                jnz try3
+                                mov currentpowerforCar1, 4
+                                mov di,pos_box1 ; set input parameters
+                                call firstchecksbeforeobstacle
+                                cmp checkvalidobstacle,1
+                                jnz nochange1
+                                mov checkvalidobstacle, 0
+                                mov currentpoweractivatedrforCar1,0
+                                call drawspecialobstacle
+                                mov di,statuspowerleft
+                                call Noobstacleleft
+                                mov currentpowerforCar1,4
+                                mov powerupcar1timer,0
+                                jmp endpowers
+                            try3:
+                                cmp currentpowerforCar1, 2
+                                jnz nochange1
+                                mov currentpowerforCar1, 4
+                                mov currentpoweractivatedrforCar1,2
+                                mov passobstacle_c1,1 ; will be set to zero when passing this obstacle
+                                mov di,statuspowerleft
+                                call Noobstacleleft
+                                mov currentpowerforCar1,4
+                                mov powerupcar1timer,0
+                                jmp endpowers
+
                 activatefor2:
                             cmp currentpowerforCar2, 4
                             jz nochange2
@@ -1429,20 +1920,53 @@ activate_powers proc
                             mov powerc2activated, 1
                             cmp currentpowerforCar2,1
                             jnz try11
+                            mov currentpowerforCar2, 4
                             mov currentpoweractivatedrforCar2,1
                             call speedup1
+                            mov di,statuspowerright
+                            call Noobstacleleft
                             mov currentpowerforCar2,4
                             mov powerupcar2timer,0
                             jmp endpowers
                             try11:
-                            cmp currentpowerforCar2, 3
-                            jnz nochange
-                            mov di,pos_box1
-                            mov currentpoweractivatedrforCar2,3
-                            call speeddown1
-                            mov currentpowerforCar2,4
-                            mov powerupcar2timer,0
-                            jmp endpowers
+                                cmp currentpowerforCar2, 3
+                                jnz try22
+                                mov currentpowerforCar2, 4
+                                mov di,pos_box2
+                                mov currentpoweractivatedrforCar2,3
+                                call speeddown1
+                                mov di,statuspowerright
+                                call Noobstacleleft
+                                mov currentpowerforCar2,4
+                                mov powerupcar2timer,0
+                                jmp endpowers
+                            try22:
+                                cmp currentpowerforCar2, 0
+                                jnz try33
+                                mov currentpowerforCar2, 4
+                                mov di,pos_box2 ; set input parameters
+                                call firstchecksbeforeobstacle
+                                cmp checkvalidobstacle,1
+                                jnz nochange2
+                                mov checkvalidobstacle, 0
+                                mov currentpoweractivatedrforCar2,0
+                                call drawspecialobstacle
+                                mov di,statuspowerright
+                                call Noobstacleleft
+                                mov currentpowerforCar2,4
+                                mov powerupcar2timer,0
+                                jmp endpowers
+                            try33:
+                                cmp currentpowerforCar2, 2
+                                jnz nochange2
+                                mov currentpowerforCar2, 4
+                                mov di,statuspowerright
+                                call Noobstacleleft
+                                mov currentpowerforCar2,4
+                                mov powerupcar2timer,0
+                                mov currentpoweractivatedrforCar2,2
+                                mov passobstacle_c2,1 ; will be set to zero when passing this obstacle
+                                jmp endpowers
                 nochange1:
                     mov currentpowerforCar1, 4
                     jmp endpowers
@@ -1452,6 +1976,386 @@ activate_powers proc
                 pop di
                 ret
 activate_powers endp
+; ----------------- Draw obstacle for power ups -----------------------;
+firstchecksbeforeobstacle proc ; input - > di pos of car , output -> draw or leave by flag
+                          pusha
+                          cmp di,pos_box1
+                          jnz checkbeforeobstacle2
+                          cmp last_mov_c1,0
+                          jnz checkforleft1
+                          add di, k*pixel_size ; adjust parameters
+                          mov posforobstacle, di
+                          call checkvalidplace
+                          jmp endfirstchecksbeforeobstacle
+                          checkforleft1:
+                                        cmp last_mov_c1, 3 ; left
+                                        jnz continuechecks1
+                                        add di, pixel_size ; adjust parameters
+                                        mov posforobstacle, di
+                                        call checkvalidplace
+                                        jmp endfirstchecksbeforeobstacle
+                          continuechecks1:
+                                        cmp last_mov_c1, 1 ; down
+                                        jnz checkforrightmove1
+                                        mov dx,pos_box1 
+                                        cmp dx, k*pixel_size ; if it is in the border of the screen
+                                        jl endfirstchecksbeforeobstacle ; can't draw obstacle
+                                        mov di,pos_box1 ; set parameters
+                                        sub di,k*pixel_size ; set parameters
+                                        mov posforobstacle, di
+                                        call checkvalidplace
+                                        jmp endfirstchecksbeforeobstacle
+                          checkforrightmove1:
+                                            cmp last_mov_c1, 2 ; right
+                                            jnz endfirstchecksbeforeobstacle ; no more checks
+                                            mov ax,pos_box1 ; get remainedr to chcek border
+                                            mov dx,0 ; for division
+                                            mov cx,k
+                                            div cx
+                                            cmp ax,pixel_size + 1 ; set parameters
+                                            jl endfirstchecksbeforeobstacle ; no violations
+                                            mov di,pos_box1
+                                            sub di,pixel_size
+                                            mov posforobstacle, di
+                                            call checkvalidplace
+                                            jmp endfirstchecksbeforeobstacle
+                          checkbeforeobstacle2:
+                                            cmp last_mov_c2,0
+                                            jnz checkforleft2
+                                            add di, k*pixel_size ; adjust parameters
+                                            mov posforobstacle, di
+                                            call checkvalidplace
+                                            jmp endfirstchecksbeforeobstacle
+                                            checkforleft2:
+                                                            cmp last_mov_c2, 3 ; left
+                                                            jnz continuechecks2
+                                                            add di, pixel_size ; adjust parameters
+                                                            mov posforobstacle, di
+                                                            call checkvalidplace
+                                                            jmp endfirstchecksbeforeobstacle
+                                            continuechecks2:
+                                            cmp last_mov_c2, 1 ; down
+                                            jnz checkforrightmove2
+                                            mov dx,pos_box2
+                                            cmp dx, k*pixel_size ; if it is in the border of the screen
+                                            jl endfirstchecksbeforeobstacle ; can't draw obstacle
+                                            mov di,pos_box2 ; set parameters
+                                            sub di,k*pixel_size ; set parameters
+                                            mov posforobstacle, di
+                                            call checkvalidplace
+                                            jmp endfirstchecksbeforeobstacle
+                                            checkforrightmove2:
+                                                                cmp last_mov_c2, 2 ; right
+                                                                jnz endfirstchecksbeforeobstacle ; no more checks
+                                                                mov ax,pos_box2 ; get remainedr to chcek border
+                                                                mov dx,0 ; for division
+                                                                mov cx,k
+                                                                div cx
+                                                                cmp ax,pixel_size + 1 ; set parameters
+                                                                jl endfirstchecksbeforeobstacle ; no violations
+                                                                mov di,pos_box2
+                                                                sub di,pixel_size
+                                                                mov posforobstacle, di ; set position to draw obstacles
+                                                                call checkvalidplace
+                                                                jmp endfirstchecksbeforeobstacle
+                          
+                          endfirstchecksbeforeobstacle:
+                          popa
+                          ret
+firstchecksbeforeobstacle endp
+; ----------------------------------------------------------------------;
+checkvalidplace proc ; -> input: di(pos of the new obstacle to check)
+                pusha
+                mov si,offset color_path
+                mov dx,lengthObstacle - 1
+                mov cx,lengthObstacle - 1
+                outerloop:
+                            mov cx,pixel_size
+                            check_myplace:
+                                            mov si,offset color_path ; ste si to the color of path
+                                            cmpsb  ; check if color 
+                                            jnz notvalid ; if sth not track then not valid
+                                            dec cx 
+                                            jnz check_myplace ; complete inner loop
+                            sub di,lengthObstacle - 1
+                            add di,k
+                            dec dx
+                            jnz outerloop ; complete outer loop
+                mov checkvalidobstacle, 1 ; all good
+                jmp endcheckvalid
+                notvalid:
+                        mov checkvalidobstacle, 0
+                endcheckvalid:
+                popa
+                ret
+checkvalidplace endp
+; --------------- Adjust positions for power ups ----------------------;
+scan_left_p proc
+            push di
+            push si
+            mov si,offset temp_color_powerup
+            cmp powerupchooser, 1
+            jnz scan_left_2 
+            scan_left_1:
+                        cmpsb 
+                        jnz save_c1
+                        dec si
+                        sub di,2
+                        jmp scan_left_1
+            scan_left_2:
+                        cmpsb 
+                        jnz save_c2
+                        dec si
+                        sub di,2
+                        jmp scan_left_2
+            save_c1:
+                    mov prevdicar1, di
+                    jmp end_scan_left
+            save_c2:
+                    mov prevdicar2, di
+            end_scan_left:
+                    pop si
+                    pop di
+            ret
+scan_left_p endp
+;----------------------------------------------------------------------;
+scan_up_p     proc
+            push di
+            push si
+            mov si,offset temp_color_powerup
+            cmp powerupchooser, 1
+            jnz scan_up_2 
+            scan_up_1:
+                        cmpsb 
+                        jnz save_c12
+                        sub di, k + 1
+                        dec si
+                        jmp scan_up_1
+            scan_up_2:
+                        cmpsb 
+                        jnz save_c22
+                        sub di,k + 1
+                        dec si
+                        jmp scan_up_2
+            save_c12:
+                    mov prevdicar1, di
+                    dec prevdicar1
+                    add prevdicar1, k
+                    jmp end_scan_up
+            save_c22:
+                    mov prevdicar2, di
+                    dec prevdicar2
+                    add prevdicar2, k
+            end_scan_up:
+                    pop si
+                    pop di
+            ret
+scan_up_p     endp
+; ---------------------------------------------------------------------;
+; --------------- Adjust positions for power ups ----------------------;
+scan_left_o proc
+            push di
+            push si
+            mov si,offset obstacle_color
+            cmp temp_current_pass, 1
+            jnz scan_left_2o 
+            scan_left_1o:
+                        cmpsb 
+                        jnz save_c1o
+                        dec si
+                        sub di,2
+                        jmp scan_left_1o
+            scan_left_2o:
+                        cmpsb 
+                        jnz save_c2o
+                        dec si
+                        sub di,2
+                        jmp scan_left_2o
+            save_c1o:
+                    mov startobstaclepos_c1, di
+                    jmp end_scan_lefto
+            save_c2o:
+                    mov startobstaclepos_c2, di
+            end_scan_lefto:
+                    pop si
+                    pop di
+            ret
+scan_left_o endp
+;----------------------------------------------------------------------;
+scan_up_o     proc
+            push di
+            push si
+            mov si,offset obstacle_color
+            cmp temp_current_pass, 1
+            jnz scan_up_2o
+            scan_up_1o:
+                        cmpsb 
+                        jnz save_c12o
+                        sub di, k + 1
+                        dec si
+                        jmp scan_up_1o
+            scan_up_2o:
+                        cmpsb 
+                        jnz save_c22o
+                        sub di,k + 1
+                        dec si
+                        jmp scan_up_2o
+            save_c12o:
+                    mov startobstaclepos_c1, di
+                    dec startobstaclepos_c1
+                    add startobstaclepos_c1, k
+                    jmp end_scan_upo
+            save_c22o:
+                    mov startobstaclepos_c2, di
+                    dec startobstaclepos_c2
+                    add startobstaclepos_c2, k
+            end_scan_upo:
+                    pop si
+                    pop di
+            ret
+scan_up_o     endp
+; ---------------------------------------------------------------------;
+drawspecialobstacle proc
+                    push si
+                    push dx
+                    push di
+                    mov si,offset obstacle_color
+                    mov di,posforobstacle ; new position
+                    MOV DX,lengthObstacle - 1
+                    spo:
+                        mov cx,lengthObstacle - 1
+                        spo2:
+                            movsb
+                            dec si
+                            dec cx
+                            jnz spo2
+                        sub di,lengthObstacle - 1
+                        add di,k
+                        dec dx
+                        jnz spo
+                    pop di
+                    pop dx
+                    pop si
+                    ret
+drawspecialobstacle endp
+; ----------------- obstacle backup for powers ------------------------;
+obstaclepassbackup proc
+                    push si
+                    push dx
+                    push di
+                    mov si,offset obstacle_color
+                    cmp di,pos_box1 ; new position
+                    jnz twothen
+                    mov di,startobstaclepos_c1
+                    jmp then
+                    twothen:
+                            mov di,startobstaclepos_c2
+                    then:
+                    MOV DX,lengthObstacle - 1
+                    spo3:
+                        MOV CX,lengthObstacle - 1
+                        spo4:
+                            MOVSB
+                            dec si
+                            dec cx
+                            jnz spo4
+                        sub DI,lengthObstacle - 1
+                        add di,k
+                        DEC DX
+                        JNZ spo3
+                   
+                    pop di
+                    pop dx
+                    pop si
+                    ret
+obstaclepassbackup endp
+; ------------------------------------------------------------------- -;
+undo_obstacle_2 proc
+                pusha
+                mov dx, lengthObstacle - 1
+                mov si, offset obstacle_color
+                mov di,startobstaclepos_c2
+                loop_obstacle:
+                            mov cx, lengthObstacle - 1
+                            loop_obstacle_inner:
+                                                cmpsb
+                                                jnz still
+                                                dec si
+                                                dec cx
+                                                jnz loop_obstacle_inner
+                            sub di,lengthObstacle - 1
+                            add di,k
+                            dec dx
+                            jnz loop_obstacle
+                mov startobstaclepos_c2, 0
+                mov passobstacle_c2,0
+                mov currentpoweractivatedrforCar2,4
+                still:
+                popa
+                ret
+undo_obstacle_2 endp
+; ------------------------------------------------------------------- -;
+undo_obstacle_1 proc
+                pusha
+                mov dx, lengthObstacle - 1
+                mov si, offset obstacle_color
+                mov di,startobstaclepos_c1
+                loop_obstacle1:
+                            mov cx, lengthObstacle - 1
+                            loop_obstacle_inner1:
+                                                cmpsb
+                                                jnz still
+                                                dec si
+                                                dec cx
+                                                jnz loop_obstacle_inner1
+                            sub di,lengthObstacle - 1
+                            add di,k
+                            dec dx
+                            jnz loop_obstacle1
+                mov startobstaclepos_c1, 0
+                mov passobstacle_c1,0
+                mov currentpoweractivatedrforCar1,4
+                still2:
+                popa
+                ret
+undo_obstacle_1 endp
+; ----------------- Draw endline again and again ----------------------;
+drawendformove  proc
+                pusha
+                mov bp,endLineStart ; starting position
+                mov bx, endLineEnd ; end position
+                sub bx,bp 
+                mov ax,bx
+                mov si,k
+                mov dx,0
+                div si ; divide by k, if no remainder then it is vertical
+                cmp ax,0 
+                jz onsamehori
+                onsamevert:
+                            mov cx,bx
+                            mov si,offset color_endline ; draw the endline color
+                            mov di,endLineStart ; starting position
+                            endlinedraw:
+                                        movsb ; copy the value to the segment
+                                        dec si ; adjust the values
+                                        dec di
+                                        add di,k
+                                        dec cx ; dec loop 
+                                        jnz endlinedraw
+                            jmp enddrawendline
+                onsamehori:
+                            mov cx,bx ; difference
+                            mov si,offset color_endline ; draw the endline color
+                            mov di,endLineStart ; starting position
+                            endlinedraw2:
+                                movsb ; copy the value to the segment
+                                dec si ; adjust the values
+                                dec cx ; dec loop 
+                                jnz endlinedraw2
+                enddrawendline:
+                popa
+                ret
+drawendformove  endp
 ; --------------------------------------------------;
 obstacleDraw proc far
 
@@ -1487,20 +2391,27 @@ obstacleDraw proc far
                     ja skipObstacleD
                                        
                     ;;;
-                    mov al, obstacle_color
-                    mov bx, lengthObstacle
                     
-                    inc lengthDrawn 
+                     mov al, 09h
+                    
+                    mov bx, lengthObstacle
+                        inc lengthDrawn   
                     sub bx, lengthDrawn
+
                     jz addWidthObstacleD
+                    
                     ;;;
+                   
+                    
 
                     
                     jmp noChangeD     ;;; draw obstacle
                     addWidthObstacleD:
                     inc widthDrawn
+                    
                     mov lengthDrawn, 0
                     mov ax, widthDrawn
+                    inc ax
                     cmp ax, lengthObstacle
                     jz obstacleDone
                     jmp skipObstacleD
@@ -2786,9 +3697,6 @@ checkLeft proc far                                  ;;;y1 = y2, x1 3l shmal = us
     
 checkLeft endp
  
- 
- 
-
 drawUp proc far                                     ;;; after checking
 
                     call  checkUP
@@ -2987,7 +3895,11 @@ drawEndLine proc far
                     sub   cx, x1
 
                     mov   al, 04h
+                    mov endLineStart, di
+
                     rep   stosb
+                    mov endLineEnd, di
+                    dec endLineEnd
 
                     jmp   endLine
       vertical:     
@@ -2998,11 +3910,15 @@ drawEndLine proc far
                     mul   bx
                     add   ax, x1
                     mov   di, ax
+                    mov endLineStart, di
       color:        
                     mov   al, 04h
                     stosb
                     add   di, 319
                     loop  color
+
+                    mov endLineEnd, di
+                    dec endLineEnd
     
     
     
@@ -3047,7 +3963,6 @@ RandObst proc far
                     mov ax, bx
                     ret
 RandObst endp
-
 ;;;;;;;;;;;;;;;;;;;;;; Daowd 2 new procs
 starttime proc
    mov ah, 2ch
@@ -3076,6 +3991,7 @@ push di
     je nochange
     inc timer      ; Check if 10 seconds have passed
     inc poweruptimer
+    call displayInitialTime
     ; First power up timer ;
     cmp powerc1activated,1 ; if a power is currently activated
     jnz completerest ; not activated
@@ -3084,6 +4000,7 @@ push di
     jnz completerest ; else complete
     mov di,pos_box1 ; car 1
     call releasepowerups ; function that release power ups activated
+    
     completerest:
     ; second power up timer ;
     cmp powerc2activated,1 ; if a power is currently activated
@@ -3094,12 +4011,14 @@ push di
     mov di,pos_box2  ; car 2 
     call releasepowerups ; function that release power ups activated
     completerest2:
-    cmp poweruptimer,10
+    ;call checkforboth
+    cmp poweruptimer,timediplaypower
+       
     jnz rest
     mov powerupflag,1
     mov  poweruptimer,0  
     rest:
-    cmp timer, 120
+    cmp timer, endgametimee
     jnz updateparams
     mov flag,1
     updateparams:
@@ -3116,7 +4035,7 @@ markend endp
 timeover proc     
 endofgame:
 mov aX, 0600h ;bacground
-      mov bh, 03h
+      mov bh, 79
       mov cx, 0603h
       mov dx, 1324h       
       int 10h 
@@ -3154,89 +4073,22 @@ mov aX, 0600h ;bacground
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;score1    
     ;;;;;;;;;;;;;;;;;;;;;;;;;monkey photo
    
-    lea si,gameoverpic
-    mov di,25728
-     MOV DX,73
-
-    REPEAT4:
-    MOV CX,80
-REP MOVSB
-ADD DI,SCREEN_WIDTH-80
-DEC DX
-JNZ REPEAT4
+mov di ,25728
+call drawcrying
 ;;;;;;;;;;;;;;;;;;; bluecar over
-lea si,blueover
- mov di,25632
-     MOV DX,30
-
-    REPEAT5:
-    MOV CX,50
-REP MOVSB
-ADD DI,SCREEN_WIDTH-50
-DEC DX
-JNZ REPEAT5
-;;;;;;;;;;;;;;;;; redcarin over
-lea si,redover
- mov di,25828
-     MOV DX,30
-
-    REPEAT6:
-    MOV CX,55
-REP MOVSB
-ADD DI,SCREEN_WIDTH-55
-DEC DX
-JNZ REPEAT6
+mov di,25632
+call drawleftinwinning 
+mov di,25828
+call drawrightinwinng
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; return to main
-mov timer,0
- mov ah, 2ch
-    int 21h
-    mov prevsec, dh
-
-taketime2:
-mov bl,cursec
-mov prevsec,bl
-    mov ah, 2ch
-    int 21h
-    mov cursec, dh
-    mov bh,prevsec
-    ;sub cursec, bl ; Calculate the difference in seconds
-    cmp cursec, bh 
-    je taketime2
-    inc timer2      ; Check if 10 seconds have passed
-    cmp timer2,5
-
-    jge returnz      ; If 10 seconds have passed, display the message
-    jmp taketime2
-    returnz:
-     mov ah,00h 
-mov al,03h 
-int 10h
-jmp lopp
+call afterend
 
 ret
 timeover endp
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;winerrrrrrrrrrrrrrrrrrr
 getwinner proc 
-    mov ah, 2ch
-    int 21h
-    mov prevsec, dh
-taketimeE:
-mov bl,cursec
-mov prevsec,bl
-    mov ah, 2ch
-    int 21h
-    mov cursec, dh
-    mov bh,prevsec
-    ;sub cursec, bl ; Calculate the difference in seconds
-    cmp cursec, bh 
-    je taketimeE
-    inc timer      ; Check if 10 seconds have passed
-    cmp timer,10
-
-    jge endofgame2        ; If 10 seconds have passed, display the message
-    jmp taketimeE
-endofgame2:
+    
 mov aX, 0600h ;bacground
       mov bh, 03h
       mov cx, 0603h
@@ -3275,7 +4127,7 @@ mov aX, 0600h ;bacground
     int 21h
     
     ;;;;;;;;;;;;;;;;;;;;;;;;winner
-    mov winer,2
+ 
     MOV AH,02  
     MOV BH,00  ;page    
     MOV DL,17;column  
@@ -3292,79 +4144,30 @@ mov aX, 0600h ;bacground
     mov ah,9
     int 21h;
      ;;;;;;;;;;;;;;;;;;;;;;;;;monkey photo
-   
-    lea si,celebratemonkey
+     
     mov di,25728
-     MOV DX,60
-    REPEATT4:
-    MOV CX,45
-REP MOVSB
-ADD DI,SCREEN_WIDTH-45
-DEC DX
-JNZ REPEATT4
+    
 ;;;;;;;;;;;;;;;;;;; bluecar over
-lea si,blueover
  mov di,25632
-     MOV DX,30
-
-    REPEATT5:
-    MOV CX,50
-REP MOVSB
-ADD DI,SCREEN_WIDTH-50
-DEC DX
-JNZ REPEATT5
-;;;;;;;;;;;;;;;;; redcarin over
-lea si,redover
- mov di,25828
-     MOV DX,30
-
-    REPEATT6:
-    MOV CX,55
-REP MOVSB
-ADD DI,SCREEN_WIDTH-55
-DEC DX
-JNZ REPEATT6
-ret
+call drawleftinwinning 
+mov di,25828
+call drawrightinwinng
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; return to main
-mov timer,0
- mov ah, 2ch
-    int 21h
-    mov prevsec, dh
-
-taketimeE2:
-mov bl,cursec
-mov prevsec,bl
-    mov ah, 2ch
-    int 21h
-    mov cursec, dh
-    mov bh,prevsec
-    ;sub cursec, bl ; Calculate the difference in seconds
-    cmp cursec, bh 
-    je taketimeE2
-    inc timer      ; Check if 10 seconds have passed
-    cmp timer,5
-
-    jge returnn     ; If 10 seconds have passed, display the message
-    jmp taketimeE2
-    returnn:
-    mov ah,00h 
-mov al,03h 
-int 10h
-jmp lopp
-
-ret
+mov di,25728
+call drawcelebrate
+call afterend
 getwinner endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;powerups section
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;powerups section
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;first in statusbar
 drawIncresespeed proc
 lea si,increseimg ;left di for power ups 46120-----------right 46328
 ;mov di,46120
-MOV DX,20
+MOV DX,aggreedsizefrostausbar
 
     REPEATincrese2:
-    MOV CX,20
+    MOV CX,aggreedsizefrostausbar
 REP MOVSB
-ADD DI,300
+ADD DI,320-aggreedsizefrostausbar
 DEC DX
 JNZ REPEATincrese2
 
@@ -3374,12 +4177,12 @@ drawIncresespeed endp
 drawcreateob proc
 lea si,createob ;left di for power ups 46120-----------right 46328
 ;mov di,48888
-MOV DX,20
+MOV DX,aggreedsizefrostausbar
 
     REPEATob2:
-    MOV CX,20
+    MOV CX,aggreedsizefrostausbar
 REP MOVSB
-ADD DI,300
+ADD DI,320-aggreedsizefrostausbar
 DEC DX
 JNZ REPEATob2
 
@@ -3389,12 +4192,12 @@ drawcreateob endp
 drawflyobstacle proc
 lea si,flyob ;left di for power ups 46120-----------right 46328 update ll 48680  rr 48888
 ;mov di,48888
-MOV DX,20
+MOV DX,aggreedsizefrostausbar
 
     REPEATfly2:
-    MOV CX,20
+    MOV CX,aggreedsizefrostausbar
 REP MOVSB
-ADD DI,300
+ADD DI,320-aggreedsizefrostausbar
 DEC DX
 JNZ REPEATfly2
 ret
@@ -3403,12 +4206,12 @@ drawflyobstacle endp
 drawdecresesofanother proc
 lea si,decreseimg; left di for power ups 46120-----------right 46328
 ;mov di,46328
-MOV DX,20
+MOV DX,aggreedsizefrostausbar
 
     REPEATincrese:
-    MOV CX,20
+    MOV CX,aggreedsizefrostausbar
 REP MOVSB
-ADD DI,300
+ADD DI,320-aggreedsizefrostausbar
 DEC DX
 JNZ REPEATincrese
 
@@ -3416,19 +4219,13 @@ ret
 drawdecresesofanother endp 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; clearscreen of obstacle
 Noobstacleleft proc
-;mov aX, 0600h ;bacground
- ;     mov bh, 09h
-  ;    mov cx, 1305h
-   ;   mov dx, 1407h       
-    ;  int 10h 
-    ;mov di,48,680
     mov si,offset clearfromstatus
-    MOV DX,20
+    MOV DX,aggreedsizefrostausbar
 
     clearstatus:
-    MOV CX,20
+    MOV CX,aggreedsizefrostausbar
 REP MOVSB
-ADD DI,300
+ADD DI,320-aggreedsizefrostausbar
 DEC DX
 JNZ clearstatus
       ret
@@ -3466,73 +4263,18 @@ add dl,30h
 mov ah,02h
 int 21h;
 dec secondss
-
 ret
 displayInitialTime endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;for status
-changeTimer proc
-mov ah, 2ch
-    int 21h
-    mov prevsec, dh
 
-taketimeE3:
-mov bl,cursec
-mov prevsec,bl
-    mov ah, 2ch
-    int 21h
-    mov cursec, dh
-    mov bh,prevsec
-    ;sub cursec, bl ; Calculate the difference in seconds
-    cmp cursec, bh 
-    je taketimeE3
-    mov al,secondsss
-    ;call printseconds
-    dec secondsss
-    inc timer      ; Check if 10 seconds have passed
-    cmp timer,60
-
-    jge endofgame23        ; If 10 seconds have passed, display the message
-    jmp taketimeE3
-endofgame23:
-mov aX, 0600h ;bacground
-      mov bh, 03h
-      mov cx, 0603h
-      mov dx, 1324h       
-      int 10h 
-
-    MOV AH,02  
-    MOV BH,00  ;page    
-    MOV DL,16 ;column  
-    MOV DH,8  ;row 
-    INT 10H 
-
-    mov ah,9
-
-        mov dx,offset winningmsg
-    int 21h
-    ;;;;;;;;;;;;;;;;;;;;;;
-    MOV AH,02  
-    MOV BH,00  ;page    
-    MOV DL,4 ;column  
-    MOV DH,8  ;row 
-    INT 10H 
-    ;;;;;;;
-    mov ah,9
-
-        mov dx,offset firstPlayerName+2
-    int 21h
-ret
-changeTimer endp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;obstacles in track
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;fly for 222222
 drawflyinten proc
 ;mov di,4824
 mov si,offset flyinten
-MOV DX,10
+MOV DX,aggreedsize
 flyu:
-MOV CX,10
+MOV CX,aggreedsize
 REP MOVSB
-ADD DI,310
+ADD DI,320-aggreedsize
 DEC DX
 JNZ flyu
 ret
@@ -3541,11 +4283,11 @@ drawflyinten endp
 drawbomb proc
 ;mov di,8644
 mov si,offset bomb
-MOV DX,10
+MOV DX,aggreedsize
 bomb8:
-MOV CX,10
+MOV CX,aggreedsize
 REP MOVSB
-ADD DI,310
+ADD DI,320-aggreedsize
 DEC DX
 JNZ bomb8
 ret
@@ -3554,11 +4296,11 @@ drawbomb endp
 drawfire proc
 ;mov di,8664
 mov si,offset fire
-MOV DX,10
+MOV DX,aggreedsize
 fire8:
-MOV CX,10
+MOV CX,aggreedsize
 REP MOVSB
-ADD DI,310
+ADD DI,320-aggreedsize
 DEC DX
 JNZ fire8
 ret
@@ -3567,11 +4309,11 @@ drawfire endp
 drawbeatme proc
 ;mov di,12484
 mov si,offset beatme
-MOV DX,10
+MOV DX,aggreedsize
 beatme8:
-MOV CX,10
+MOV CX,aggreedsize
 REP MOVSB
-ADD DI,310
+ADD DI,320-aggreedsize
 DEC DX
 JNZ beatme8
 ret
@@ -3702,13 +4444,13 @@ jz tryanother
  
  cmp powerupchooser,1
  jnz a
- mov di,48680
+ mov di,statuspowerleft
  mov powerupcar1timer,0
  call drawflyobstacle
  mov currentpowerforCar1,2
  jmp cl1
  a:
- mov di,48888
+ mov di,statuspowerright
  mov powerupcar2timer,0
  call drawflyobstacle
  mov currentpowerforCar2,2
@@ -3718,13 +4460,13 @@ jz tryanother
   
  cmp powerupchooser,1
  jnz a2
- mov di,48680
+ mov di,statuspowerleft
  mov powerupcar1timer,0
  call drawcreateob
  mov currentpowerforCar1,0
  jmp cl2
  a2:
- mov di,48888
+ mov di,statuspowerright
  mov powerupcar2timer,0
  call drawcreateob
  mov currentpowerforCar2,0
@@ -3733,13 +4475,13 @@ jz tryanother
  handlebeatme:
  cmp powerupchooser,1
  jnz a3
- mov di,48680
+ mov di,statuspowerleft
  mov powerupcar1timer,0
  call drawdecresesofanother
  mov currentpowerforCar1,3
  jmp cl3
  a3:
- mov di,48888
+ mov di,statuspowerright
  mov powerupcar2timer,0
  call drawdecresesofanother
  mov currentpowerforCar2,3
@@ -3748,13 +4490,13 @@ jz tryanother
  handlefire:
  cmp powerupchooser,1
  jnz a4
- mov di,48680
+ mov di,statuspowerleft
  mov powerupcar1timer,0
  call drawIncresespeed
  mov currentpowerforCar1,1
  jmp cl4
  a4:
- mov di,48888
+ mov di,statuspowerright
  mov powerupcar2timer,0
  call drawIncresespeed
  mov currentpowerforCar2,1
@@ -3787,13 +4529,13 @@ jz endboth
  handlefly2:
  cmp powerupchooser,1
  jnz a5
- mov di,48680
+ mov di,statuspowerleft
  mov powerupcar1timer,0
  call drawflyobstacle
  mov currentpowerforCar1,2
  jmp cl5
  a5:
- mov di,48888
+ mov di,statuspowerright
  mov powerupcar2timer,0
  call drawflyobstacle
  mov currentpowerforCar2,2
@@ -3802,13 +4544,13 @@ jz endboth
  handlebomb2:
 cmp powerupchooser,1
  jnz a6
- mov di,48680
+ mov di,statuspowerleft
  mov powerupcar1timer,0
  call drawcreateob
  mov currentpowerforCar1,0
  jmp cl6
  a6:
- mov di,48888
+ mov di,statuspowerright
  mov powerupcar2timer,0
  call drawcreateob
  mov currentpowerforCar2,0
@@ -3817,13 +4559,13 @@ cmp powerupchooser,1
  handlebeatme2:
  cmp powerupchooser,1
  jnz a7
- mov di,48680
+ mov di,statuspowerleft
  mov powerupcar1timer,0
  call drawdecresesofanother
  mov currentpowerforCar1,3
  jmp cl7
  a7:
- mov di,48888
+ mov di,statuspowerright
  mov powerupcar2timer,0
  call drawdecresesofanother
  mov currentpowerforCar2,3
@@ -3832,13 +4574,13 @@ cmp powerupchooser,1
  handlefire2:
  cmp powerupchooser,1
  jnz a8
- mov di,48680
+ mov di,statuspowerleft
  mov powerupcar1timer,0
  call drawIncresespeed
  mov currentpowerforCar1,1
  jmp cl8
  a8:
- mov di,48888
+ mov di,statuspowerright
  mov powerupcar2timer,0
  call drawIncresespeed
  mov currentpowerforCar2,1
@@ -3852,24 +4594,25 @@ cmp powerupchooser,1
     mov powerupchooser,0
  ret
 gotpowerup endp
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 drawcleaning proc
 mov si,offset floorpic
-MOV DX,10
+MOV DX,aggreedsize
 darkgrey:
-MOV CX,10
+MOV CX,aggreedsize
 REP MOVSB
-ADD DI,310
+ADD DI,320-aggreedsize
 DEC DX
 JNZ darkgrey
 ret
 drawcleaning endp
+;;;;;;;;;;;;;;;;;;;;;;;;;;
 checkforboth proc
 cmp currentpowerforCar1,4
 jz shofsecond
-cmp powerupcar1timer,5
+cmp powerupcar1timer,dissapertimerstatusbar
 jnz incrementtimer
-mov di,48680
+mov di,statuspowerleft
 call Noobstacleleft
 mov currentpowerforCar1,4
 mov powerupcar1timer,0
@@ -3879,9 +4622,9 @@ inc powerupcar1timer
 shofsecond:
 cmp currentpowerforCar2,4
 jz shofsecond2
-cmp powerupcar2timer,5
+cmp powerupcar2timer,dissapertimerstatusbar
 jnz incrementtimer2
-mov di,48888
+mov di,statuspowerright
 call Noobstacleleft
 mov currentpowerforCar2,4
 mov powerupcar2timer,0
@@ -3908,7 +4651,7 @@ checkforboth endp
                             jnz tryup
                             lea si,floor
                             dec di
-                            sub di,330
+                            sub di,327
                             dec dx
                             jnz beginup
                             mov currentpoerdirection,0
@@ -3919,7 +4662,7 @@ checkforboth endp
                             mov bx,pos_box1
                             lea si,floor
                             mov di,bx
-                            add di,3520
+                            add di,canup
                             begindown:
                             mov cx,pixel_size
                             trydown:
@@ -3930,7 +4673,7 @@ checkforboth endp
                             jnz trydown
                             dec di
                             lea si,floor
-                            add di,310
+                            add di,313
                             dec dx
                             jnz begindown
                             mov currentpoerdirection,2
@@ -3939,7 +4682,7 @@ checkforboth endp
                             generaltryleft:
                             lea si,floor
                             mov dx,pixel_size
-                             mov bx,pos_box1
+                            mov bx,pos_box1
                             mov di,bx
                             dec di
                             beginleft:
@@ -3954,7 +4697,7 @@ checkforboth endp
                             jnz tryleft
                             lea si,floor
                             dec di
-                            sub di,3200
+                            sub di,2240
                             dec dx
                             jnz beginleft
                              mov currentpoerdirection,3
@@ -3965,7 +4708,7 @@ checkforboth endp
                              mov dx,pixel_size
                              mov bx,pos_box1
                             mov di,bx
-                            add di,11
+                            add di,8
                             beginright:
                             mov cx,pixel_size
                             tryright:
@@ -3977,7 +4720,7 @@ checkforboth endp
                             dec cx
                             jnz tryright
                             lea si,floor                         
-                            sub di,3200
+                            sub di,2240
                             inc di
                             dec dx
                             jnz beginright
@@ -4021,7 +4764,7 @@ checkforboth endp
  checkavailblecar1 endp
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 checkavailblecar2 proc
-  mov bx,pos_box2
+ mov bx,pos_box2
  mov di,bx 
  sub di,k
  lea si,floor
@@ -4036,7 +4779,7 @@ checkavailblecar2 proc
                             jnz tryup2
                             lea si,floor
                             dec di
-                            sub di,330
+                            sub di,327
                             dec dx
                             jnz beginup2
                             mov currentpoerdirection,0
@@ -4044,10 +4787,10 @@ checkavailblecar2 proc
                             ;;;;;;;;;;;;;;;;;;;;;;;;;;;downpower
                             generaltrydown2:
                             mov dx,pixel_size
-                            mov bx,pos_box1
+                            mov bx,pos_box2
                             lea si,floor
                             mov di,bx
-                            add di,3520
+                            add di,canup
                             begindown2:
                             mov cx,pixel_size
                             trydown2:
@@ -4058,7 +4801,7 @@ checkavailblecar2 proc
                             jnz trydown2
                             dec di
                             lea si,floor
-                            add di,310
+                            add di,313
                             dec dx
                             jnz begindown2
                             mov currentpoerdirection,2
@@ -4067,7 +4810,7 @@ checkavailblecar2 proc
                             generaltryleft2:
                             lea si,floor
                             mov dx,pixel_size
-                             mov bx,pos_box1
+                             mov bx,pos_box2
                             mov di,bx
                             dec di
                             beginleft2:
@@ -4082,7 +4825,7 @@ checkavailblecar2 proc
                             jnz tryleft2
                             lea si,floor
                             dec di
-                            sub di,3200
+                            sub di,2240
                             dec dx
                             jnz beginleft2
                              mov currentpoerdirection,3
@@ -4093,7 +4836,7 @@ checkavailblecar2 proc
                              mov dx,pixel_size
                              mov bx,pos_box2
                             mov di,bx
-                            add di,11
+                            add di,8
                             beginright2:
                             mov cx,pixel_size
                             tryright2:
@@ -4105,7 +4848,7 @@ checkavailblecar2 proc
                             dec cx
                             jnz tryright2
                             lea si,floor                         
-                            sub di,3200
+                            sub di,2240
                             inc di
                             dec dx
                             jnz beginright2
@@ -4147,4 +4890,227 @@ checkavailblecar2 proc
                             mov currentpoerdirection,4
                             ret            
  checkavailblecar2 endp
+ drawbeginpage proc
+
+    MOV SI,offset beginpage
+    
+    MOV DX,160
+
+    REPEATt:
+    MOV CX,280
+    REP MOVSB
+    ADD DI,320-280
+    DEC DX
+    JNZ REPEATt 
+    ret
+ drawbeginpage endp
+ drawleftcarinstatus proc
+ MOV SI,offset leftcaringame
+ MOV DX,20
+
+REPEAT3:
+MOV CX,33
+REP MOVSB
+ADD DI,SCREEN_WIDTH-33
+DEC DX
+JNZ REPEAT3
+ret
+ drawleftcarinstatus endp
+ drawrightcarinstatus proc
+ MOV SI,offset rightcar
+  MOV DX,20
+    REPEAT2:
+    MOV CX,37
+REP MOVSB
+ADD DI,SCREEN_WIDTH-37
+DEC DX
+JNZ REPEAT2
+ret
+ drawrightcarinstatus endp
+randompoweratbegining proc far
+
+generalrandom:
+
+;mov cx,global_delay
+;call my_delay
+mov   ah, 2ch
+int   21h   
+mov ah,0
+mov al,dl
+add al,fun
+mov cl,dh
+ror al,cl
+mov fun,al
+mov bl,fun
+
+               
+mov randomforbegin ,bl
+
+mov ax,0
+ mov ax,320
+ mov bl,randomforbegin
+ mul bl 
+ mov specialdi,ax
+ mov di,specialdi
+ mov currentspecial,ax
+ beginchecking:
+ mov counter2,320
+ scanrow: 
+ call checkdirctionsfordirection
+ cmp foundflag,1
+ jz success
+add currentspecial,1
+ dec counter2
+ cmp counter2,0
+ jz restsuccess
+ jnz scanrow
+ success:
+ mov di,currentspecial
+  mov foundflag,0 
+jmp handelsucess
+ restsuccess:
+ dec counter
+ cmp counter,0
+ jz endranomization
+ jnz generalrandom
+ handelsucess:
  
+ mov al,randomforbegin
+ mov ah,0
+ mov bl,4
+ div bl
+ mov reminder4begin,ah
+ cmp reminder4begin,4
+ jz restsuccess
+ mov di,currentspecial 
+ cmp reminder4begin,3
+ jnz anotherpower
+ call drawbeatme
+ jmp restsuccess
+ anotherpower:
+cmp reminder4begin,2
+ jnz anotherpower2
+ call drawflyinten
+ jmp restsuccess
+ anotherpower2:
+ cmp reminder4begin,1
+ jnz anotherpower3
+ call drawfire
+ jmp restsuccess
+ anotherpower3:
+ cmp reminder4begin,0 
+ call drawbomb
+ jmp restsuccess
+endranomization:
+ret
+randompoweratbegining endp
+
+checkdirctionsfordirection proc far
+mov bx,currentspecial
+mov di,bx 
+lea si,floor
+mov dx,pixel_size             
+                          
+                            beginrightb:
+                            mov cx,pixel_size
+                            tryrightb:
+                            cmpsb
+                           jnz vantcreate2
+                            dec si
+                            dec di
+                            add di,k
+                            dec cx
+                            jnz tryrightb
+                            lea si,floor                         
+                            sub di,2240
+                            inc di
+                            dec dx
+                            jnz beginrightb
+                            mov currentpoerdirection,1                                               
+                            jmp cancreateup2b
+                            vantcreate2:
+                            mov foundflag,0                            
+                            ret
+                            cancreateup2b:
+                            mov foundflag,1                            
+                            ret                           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;powerleft
+                            
+checkdirctionsfordirection endp
+ drawleftinwinning  proc
+lea si,blueover
+     MOV DX,30
+
+    REPEATT5:
+    MOV CX,50
+REP MOVSB
+ADD DI,SCREEN_WIDTH-50
+DEC DX
+JNZ REPEATT5
+ret
+;;;;;;;;;;;;;;;;; redcarin over
+drawleftinwinning  endp
+
+ drawrightinwinng proc
+lea si,redover
+ 
+     MOV DX,30
+
+    REPEATT6:
+    MOV CX,55
+REP MOVSB
+ADD DI,SCREEN_WIDTH-55
+DEC DX
+JNZ REPEATT6
+ret
+drawrightinwinng endp
+afterend proc
+mov timer,0
+ mov ah, 2ch
+    int 21h
+    mov prevsec, dh
+
+taketimeE2:
+mov bl,cursec
+mov prevsec,bl
+    mov ah, 2ch
+    int 21h
+    mov cursec, dh
+    mov bh,prevsec
+    ;sub cursec, bl ; Calculate the difference in seconds
+    cmp cursec, bh 
+    je taketimeE2
+    inc timer      ; Check if 10 seconds have passed
+    cmp timer,5
+
+    jge returnn     ; If 10 seconds have passed, display the message
+    jmp taketimeE2
+    returnn:
+    mov ah,00h 
+mov al,03h 
+int 10h
+jmp lopp
+afterend endp
+drawcelebrate proc
+  lea si,celebratemonkey
+     MOV DX,40
+    REPEATT4:
+    MOV CX,58
+REP MOVSB
+ADD DI,SCREEN_WIDTH-58
+DEC DX
+JNZ REPEATT4
+ret
+drawcelebrate endp 
+drawcrying proc
+    lea si,gameoverpic
+    
+     MOV DX,70
+
+    REPEAT4:
+    MOV CX,90
+REP MOVSB
+ADD DI,SCREEN_WIDTH-90
+DEC DX
+JNZ REPEAT4
+ret 
+drawcrying endp
