@@ -1,8 +1,15 @@
 .286
-extern background:far
-extern info:far
-public initialpmsg,Player1msg,interruptmsg,choicePhasemsg,startChatMsg,sppoints,firstPlayerName,secondPlayerName,fppoints,startgameemsg
+
+;extern welcome:far
+;extern EnterGame:far
+public Player1msg,interruptmsg,choicePhasemsg,startChatMsg,sppoints,firstPlayerName,secondPlayerName,startgameemsg,wrong,wrong2,wrongname1flag,wrongname2flag
 public endmsg,startChatMsg,rightcar
+public beginpage,leftcaringame,SCREEN_HEIGHT,SCREEN_WIDTH,pixel_size,rightcar,obstacle_color
+public posforobstacle,lengthObstacle,endLineStart,pixel_size,endLineEnd,color_endline,widthT
+public drawObstacle,lengthD,obstacleLane,lengthDrawn,lengthT,widthDrawn,temporaryLength2,temporaryLength
+public dontDraw,changesLeft,lastDirection,prev_rand,row,x1,x2,y1,y2,clearfromstatus,aggreedsize,aggreedsizefrostausbar
+public createob,bomb,floor,Player2msg,flyinten,lengthLane,redover,fire,flyob,decreseimg,beatme,floorpic,bluecar,blueover,celebratemonkey,gameoverpic
+public secondss,x,y,fill,skipFill,addFill,pos_box1,pos_box2,lastObstacle,drawn,color_track
 .MODEL huge
 .Stack 64
 .Data
@@ -1652,7 +1659,7 @@ poweruptimer db 0
 powerupflag db 0
 canpower db 0
 floor db 8
-endgametimee equ 60
+endgametimee equ 120
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;s&z varibles
 Flyfloor db 54;skipobsatacle db  
 beatmefloor db 53
@@ -1694,8 +1701,8 @@ temp_current_pass  dw 0
 
 
 .Code
-;include begin.inc
-;include welcome.inc
+;include draws.asm
+;include welcome.asm
 include game.inc
 ;include time.inc
 main PROC far
@@ -1715,4 +1722,4 @@ ret
 
 
 End main
- 
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; clearscreen of obstacle

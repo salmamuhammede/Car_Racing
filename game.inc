@@ -287,7 +287,7 @@ int 10h       ; Clear the screen in video page 1
       mov dx, 154fh       
       int 10h 
       ;;;;;;;;;;;      
-      call displayInitialTime      
+       
       ;;;;;;;;;;;;;;;;
         MOV AH,0CH
         MOV AL,14 
@@ -322,7 +322,7 @@ call drawrightcarinstatus
         jb continue
         call initialize_cars
         call randompoweratbegining
-      
+      call displayInitialTime     
         call set_interrupt
         ;;;;;;;;;;;;;;play
         call play
