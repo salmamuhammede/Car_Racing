@@ -1,5 +1,6 @@
 game proc far
 ;;;;;;;;;;;;;;;;;;
+startgame:
     mov ah,0    
     mov al,13h  ;GRAPHICS
     INT 10H       
@@ -12,40 +13,39 @@ game proc far
       ;;;;;;;;;;;;;;;;;
     MOV AX,0A000h
     MOV ES,AX
+    hh:
     call drawbeginpage 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;done
     lm:
-    mov ah,0
-    int 16h  
-    mov bl,28
-    cmp ah, bl
-    jz label2
-    jnz lm
+        mov ah,0
+        int 16h  
+        mov bl,28
+        cmp ah, bl
+        jz label2
+        jnz lm
     label2:
- 
+        mov ax, 0600h ; Background color
+        mov bh, 00h
+        mov cx, 0504h
+        mov dx, 0813h
+        int 10h
+        mov ah,2
+        mov bh,0
+        mov dl,4 ;take name
+        mov dh,5
+        int 10h
 
-mov ax, 0600h ; Background color
-mov bh, 00h
-mov cx, 0504h
-mov dx, 0813h
-int 10h
-mov ah,2
-mov bh,0
-mov dl,4 ;take name
-mov dh,5
-int 10h
-
-;printMsg EnterPlayer1msg
-mov ah, 9
-mov dx, offset Player1msg
-mov bl, 3eh  ; Set the desired color attribute
-int 21h
-tryagainname1:
-cmp wrongname1flag,0
-jz continuenaming
-mov wrongname1flag,0
-mov cx,17  
-mov di,offset firstPlayerName[2] 
+        ;printMsg EnterPlayer1msg
+        mov ah, 9
+        mov dx, offset Player1msg
+        mov bl, 3eh  ; Set the desired color attribute
+        int 21h
+        tryagainname1:
+                cmp wrongname1flag,0
+                jz continuenaming
+                mov wrongname1flag,0
+                mov cx,17  
+                mov di,offset firstPlayerName[2] 
 
 lopplk: 
 mov [di],'$'
@@ -69,50 +69,50 @@ continuenaming:
 
 ;;;;;begin pos
 ;;;;;;;;;;;;
-mov ah,2
-mov bh,0
-mov dl,4;take name
-mov dh,6
-int 10h
+    mov ah,2
+    mov bh,0
+    mov dl,4;take name
+    mov dh,6
+    int 10h
 
-; get the name
-mov ah,0AH 
-mov dx,offset firstPlayerName
-int 21h
+    ; get the name
+    mov ah,0AH 
+    mov dx,offset firstPlayerName
+    int 21h
 
     mov dl, byte ptr [firstPlayerName+1] ; Load the length of the input string
     cmp dl, 15
     jbe checkalpha
     mov wrongname1flag, 1
     jmp tryagainname1
-checkalpha:
-mov dl,firstPlayerName[2]
+    checkalpha:
+        mov dl,firstPlayerName[2]
 ;check below Z
-checkATOZ:
-    mov cl,'Z'
-    cmp dl,cl ;check if between A,Z
-    jbe above
-    jmp checkaTOzsmall
+    checkATOZ:
+        mov cl,'Z'
+        cmp dl,cl ;check if between A,Z
+        jbe above
+        jmp checkaTOzsmall
 
-above:
-   mov cl,'A'
-   cmp dl,cl
-    jae taketheother
-    mov wrongname1flag,1
-    jmp tryagainname1
+    above:
+    mov cl,'A'
+    cmp dl,cl
+        jae taketheother
+        mov wrongname1flag,1
+        jmp tryagainname1
 
 checkaTOzsmall:
-   mov al,'z'
+    mov al,'z'
     cmp dl,al     ;check if between a,z   
     jbe taketheother
     mov wrongname1flag,1
     jmp tryagainname1
 taketheother:
-mov ax, 0600h ; Background color
-mov bh, 00h
-mov cx, 0704h
-mov dx, 0813h
-int 10h
+        mov ax, 0600h ; Background color
+        mov bh, 00h
+        mov cx, 0704h
+        mov dx, 0813h
+        int 10h
 
 mov ax, 0600h ; Background color
 mov bh, 00h
@@ -161,18 +161,18 @@ int 21h
 
 continuenaming2:
 
-;;;;;begin pos
-;;;;;;;;;;;;
-mov ah,2
-mov bh,0
-mov dl,4;take name
-mov dh,11
-int 10h
-; get the name
-mov ah,0AH 
-mov dx,offset secondPlayerName
-int 21h
- mov dl, byte ptr [secondPlayerName+1] ; Load the length of the input string
+    ;;;;;begin pos
+    ;;;;;;;;;;;;
+    mov ah,2
+    mov bh,0
+    mov dl,4;take name
+    mov dh,11
+    int 10h
+    ; get the name
+    mov ah,0AH 
+    mov dx,offset secondPlayerName
+    int 21h
+    mov dl, byte ptr [secondPlayerName+1] ; Load the length of the input string
     cmp dl, 15
     jbe checkalpha2
     mov wrongname2flag, 1
@@ -187,8 +187,8 @@ checkATOZ2:
     jmp checkaTOzsmall2
 
 above2:
-   mov cl,'A'
-   cmp dl,cl
+    mov cl,'A'
+    cmp dl,cl
     jae LOOPL
     mov wrongname2flag,1
     jmp tryagainname2
@@ -202,132 +202,138 @@ checkaTOzsmall2:
 
 
 LOOPL:
-mov ah,0
-int 16h  
-mov bl,28
-cmp ah, bl 
-jNz LOOPL ; Clear the screen 
-lopp:
-mov ah,00
-mov al,03
-int 10h
-mov ax,0600h
-mov bh,3eh ;fore yellow/back blue 
-mov cx,0 ;start
-mov dx,184FH ;end
-int 10h
-;;;;;;;;;;;;;;chat part
-mov ah,2
-mov bh,0
-mov dl,0
-mov dh,19
-int 10h
-          
-mov ah,9                  
-mov al,'*'
-mov bh,0
-mov dx,80
-mov cx,dx
-mov bl,3eh
-int 10h
-;;;;;;;;;
-mov ah,2
-mov bh,0
-mov dl,27
-mov dh,10
-int 10h
+    
+    mov ah,0
+    int 16h  
+    mov bl,28
+    cmp ah, bl 
+    jNz LOOPL ; Clear the screen 
+    ;pusha
+    call set_interrupt
+lopp123:
+        mov bh,0
+        mov ah,00
+        mov al,03
+        int 10h
+        mov ax,0600h
+        mov bh,3eh ;fore yellow/back blue 
+        mov cx,0 ;start
+        mov dx,184FH ;end
+        int 10h
+        ;;;;;;;;;;;;;;chat part
+        mov ah,2
+        mov bh,0
+        mov dl,0
+        mov dh,19
+        int 10h
+                
+        mov ah,9                  
+        mov al,'*'
+        mov bh,0
+        mov dx,80
+        mov cx,dx
+        mov bl,3eh
+        int 10h
+        ;;;;;;;;;
+        mov ah,2
+        mov bh,0
+        mov dl,27
+        mov dh,10
+        int 10h
 
-mov ah,9
-mov dx,offset startgameemsg
-int 21h  
+        mov ah,9
+        mov dx,offset startgameemsg
+        int 21h  
 
-mov ah,2
-mov bh,0
-mov dl,27
-mov dh,14
-int 10h
+        mov ah,2
+        mov bh,0
+        mov dl,27
+        mov dh,14
+        int 10h
 
-mov ah,9
-mov dx,offset endmsg
-int 21h 
-mov ah,0
-int 16h  
-mov bl,60
-cmp ah, bl
-je continue
-mov bl,1
-cmp ah, bl
-je endgame
-jmp lopp
-endgame:
-MOV AH,4CH
-INT 21H
-continue:
-;;;;;;;;;;;;;;;;;;;;;
-MOV AX, 0A000h
-MOV ES, AX
+        mov ah,9
+        mov dx,offset endmsg
+        int 21h 
+        ;call set_interrupt
+        ll:
+        cmp [KeyList + 60],1
+        jz continue
+        cmp [KeyList + 1],1
+        jz end_system
+        jmp ll
+        lopp123_2:jmp lopp123
+        continue:
+        ;;;;;;;;;;;;;;;;;;;;;
+                MOV AX, 0A000h
+                MOV ES, AX
 
-; Set video mode 13h (graphics mode)
-mov ax, 0013h
-mov bh,0
-int 10h
+    ; Set video mode 13h (graphics mode)
+                mov ax, 0013h
+                mov bh,1
+                int 10h
 
-mov ax, 0600h ; Set background color
-mov bh, 196
-mov cx, 0000h
-mov dx, 184Fh
-int 10h       ; Clear the screen in video page 1
+                mov ax, 0600h ; Set background color
+                mov bh, 196
+                mov cx, 0000h
+                mov dx, 184Fh
+                int 10h       ; Clear the screen in video page 1
 
 ; Clear the screen in video page 0
-      ;call game
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      mov aX, 0600h ;bacground
-      mov bh, 09h
-      mov cx, 1200h
-      mov dx, 154fh       
-      int 10h 
-      ;;;;;;;;;;;      
-      call displayInitialTime      
-      ;;;;;;;;;;;;;;;;
-        MOV AH,0CH
-        MOV AL,14 
-        mov cx , 0
-        mov dx ,176      
+                mov aX, 0600h ;bacground
+                mov bh, 09h
+                mov cx, 1200h
+                mov dx, 154fh       
+                int 10h 
+                ;;;;;;;;;;;      
+                
+                ;;;;;;;;;;;;;;;;
+                    MOV AH,0CH
+                    MOV AL,14 
+                    mov cx , 0
+                    mov dx ,176      
          
-     here: int 10h 
-     inc cx 
-     cmp cx,320
-     jnz here   
-     ;;;;;;;;;;;;;;;;;;;;;;;
-    MOV AH,02  
-    MOV BH,0  ;page    
-    MOV DL,0  ;column  
-    MOV DH,23  ;row 
-    INT 10H 
-    mov ah,9
-    mov dx,offset startChatMsg
-    int 21h
-    mov DI,46720
+            here:
+                int 10h 
+                inc cx 
+                cmp cx,320
+                jnz here   
+            ;;;;;;;;;;;;;;;;;;;;;;;
+                MOV AH,02  
+                MOV BH,0  ;page    
+                MOV DL,0  ;column  
+                MOV DH,23  ;row 
+                INT 10H 
+                mov ah,9
+                mov dx,offset startChatMsg
+                int 21h
+                mov DI,46720
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;z&z
-    call drawleftcarinstatus
+        call drawleftcarinstatus
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-mov Di ,46675
-call drawrightcarinstatus
-        mov pos_box1, 321
-        mov pos_box2, 333
+        mov Di ,46675
+        call drawrightcarinstatus
+        mov pos_box1, k + 1
+        mov pos_box2, k + pixel_size + 1
            
         call drawTrack
-         mov ax, changesLeft
+        mov ax, changesLeft
         cmp ax, 3
         jb continue
         call initialize_cars
         call randompoweratbegining
-      
-        call set_interrupt
+        call displayInitialTime     
+        ;call set_interrupt
         ;;;;;;;;;;;;;;play
         call play
-        call ret_interrupt    
-          
+        ;call ret_interrupt
+        ;popa
+        mov bh,0
+        mov ah,00
+        mov al,03
+        int 10h
+        jmp lopp123_2
+    end_system:
+            ;call ret_interrupt
       ret
 game endp
 
@@ -358,6 +364,7 @@ set_interrupt proc
 set_interrupt endp
 ;-----------------------------------------------------;
 ret_interrupt proc
+              cli
               push ax
               push ds
               push dx
@@ -368,6 +375,7 @@ ret_interrupt proc
               pop dx
               pop ds    
               pop ax
+              sti
               ret
 ret_interrupt endp
 ; ------------------ MY Own handler ------------------;
@@ -1629,11 +1637,70 @@ move_b2            proc
                     ret
 move_b2             endp
 ; ------------------------------- ;
+initialize_vars proc
+                ;mov pos_box1 , k + 1
+                ;mov pos_box2 , k + 1 + pixel_size
+                mov secondss,120
+                mov fun,0
+                mov last_mov_c1 ,  1 ; 0 : up , 1: down, 2: right, 3: left
+                mov last_mov_c2 , 1
+                mov sdelay_m_1, 2  ;HOW MANY SECONDS TO WAIT.
+                mov sdelay_f_1, 2
+                mov sdelay_m_2, 2  ;HOW MANY SECONDS TO WAIT.
+                mov sdelay_f_2, 2
 
+                mov delay_f_1, 2  ;HOW MANY SECONDS TO WAIT.
+                mov delay_m_1, 2
+
+                mov delay_f_2, 2
+                mov delay_m_2, 2
+                mov state_c1,1
+                mov state_c2, 1
+                mov powerupcar , 0
+                mov powerupchooser , 0
+                mov powerupflag,0
+                mov powerc1activated , 0
+                mov powerc2activated , 0
+                mov time_powerc1 , 0
+                mov time_powerc2, 0
+                mov currentpoweractivatedrforCar1, 4
+                mov currentpoweractivatedrforCar2, 4
+                mov counter_end , 0 ; 0 : up, 1 : down , 2: right, 3: left
+                mov counter_end_2 , 0 ; 0 : up, 1 : down , 2: right, 3: left
+                mov checkvalidobstacle , 0
+                mov posforobstacle , 332
+                mov passobstacle_c1 , 0 ; flag to pass obstacle if obtained power up
+                mov passobstacle_c2 , 0 ; flag to pass obstacle if obtained power up
+                mov startobstaclepos_c1 , 0 ; save the starting position of obstacle to pass
+                mov startobstaclepos_c2 , 0 ; save the starting position of obstacle to pass
+                mov temp_color_powerup  , 0
+                mov temp_current_pass  , 0
+                mov winer,0
+                ;mov secondsss,120
+                mov flag,0
+                mov time_powerc2, 0
+                mov time_powerc1, 0
+                mov poweruptimer, 0
+                mov randomforbegin,0
+                mov counter,5
+                mov foundflag,0
+                mov [KeyList + 48h],0
+                mov [KeyList + 50h],0
+                mov [KeyList + 4Dh],0
+                mov [KeyList + 4Bh],0
+                mov [KeyList +  11h],0
+                mov [KeyList + 1Fh],0
+                mov [KeyList + 20h],0
+                mov [KeyList + 1Eh],0
+                mov [KeyList + 3],0
+                mov [KeyList + 9],0
+                ret
+initialize_vars endp
+; ------------------------------ ;
 play            proc
                 push di
                 push ax
-               
+                
                 check_move:
                         sti
                         mov cx,global_delay
@@ -1660,17 +1727,15 @@ play            proc
                             mov powerupflag,0
                         jmp check_move
                     endr:
-                    pop ax
-                    pop di
-                    call ret_interrupt
+                    ;call ret_interrupt
                     call timeover
                     jmp end_play
-                    endwin:
-                            pop ax
-                            pop di
-                            call ret_interrupt
+                    endwin:  
+                            ;call ret_interrupt
                             call getwinner
-                    end_play:     
+                    end_play:  
+                            pop ax
+                            pop di   
                 ret
 play            endp
 
@@ -2011,14 +2076,14 @@ firstchecksbeforeobstacle proc ; input - > di pos of car , output -> draw or lea
                           checkforrightmove1:
                                             cmp last_mov_c1, 2 ; right
                                             jnz endfirstchecksbeforeobstacle ; no more checks
-                                            mov ax,pos_box1 ; get remainedr to chcek border
-                                            mov dx,0 ; for division
-                                            mov cx,k
-                                            div cx
-                                            cmp ax,pixel_size + 1 ; set parameters
-                                            jl endfirstchecksbeforeobstacle ; no violations
+                                            ;mov ax,pos_box1 ; get remainedr to chcek border
+                                            ;mov dx,0 ; for division
+                                            ;mov cx,k
+                                            ;div cx
+                                            ;cmp ax,pixel_size + 1 ; set parameters
+                                            ;jl endfirstchecksbeforeobstacle ; no violations
                                             mov di,pos_box1
-                                            sub di,pixel_size
+                                            sub di,lengthObstacle - 1
                                             mov posforobstacle, di
                                             call checkvalidplace
                                             jmp endfirstchecksbeforeobstacle
@@ -2050,14 +2115,14 @@ firstchecksbeforeobstacle proc ; input - > di pos of car , output -> draw or lea
                                             checkforrightmove2:
                                                                 cmp last_mov_c2, 2 ; right
                                                                 jnz endfirstchecksbeforeobstacle ; no more checks
-                                                                mov ax,pos_box2 ; get remainedr to chcek border
-                                                                mov dx,0 ; for division
-                                                                mov cx,k
-                                                                div cx
-                                                                cmp ax,pixel_size + 1 ; set parameters
-                                                                jl endfirstchecksbeforeobstacle ; no violations
+                                                                ;mov ax,pos_box2 ; get remainedr to chcek border
+                                                                ;mov dx,0 ; for division
+                                                                ;mov cx,k
+                                                                ;div cx
+                                                                ;cmp ax,pixel_size + 1 ; set parameters
+                                                                ;jl endfirstchecksbeforeobstacle ; no violations
                                                                 mov di,pos_box2
-                                                                sub di,pixel_size
+                                                                sub di,lengthObstacle - 1
                                                                 mov posforobstacle, di ; set position to draw obstacles
                                                                 call checkvalidplace
                                                                 jmp endfirstchecksbeforeobstacle
@@ -2073,7 +2138,7 @@ checkvalidplace proc ; -> input: di(pos of the new obstacle to check)
                 mov dx,lengthObstacle - 1
                 mov cx,lengthObstacle - 1
                 outerloop:
-                            mov cx,pixel_size
+                            mov cx,lengthObstacle - 1
                             check_myplace:
                                             mov si,offset color_path ; ste si to the color of path
                                             cmpsb  ; check if color 
@@ -2096,7 +2161,9 @@ checkvalidplace endp
 scan_left_p proc
             push di
             push si
+            push cx
             mov si,offset temp_color_powerup
+            mov cx,pixel_size
             cmp powerupchooser, 1
             jnz scan_left_2 
             scan_left_1:
@@ -2104,19 +2171,26 @@ scan_left_p proc
                         jnz save_c1
                         dec si
                         sub di,2
-                        jmp scan_left_1
+                        dec cx 
+                        jnz scan_left_1
+                        ;jmp scan_left_1
+            jmp save_c1
             scan_left_2:
                         cmpsb 
                         jnz save_c2
                         dec si
                         sub di,2
-                        jmp scan_left_2
+                        dec cx 
+                        jnz scan_left_2
+                        ;jmp scan_left_2
+            jmp save_c2
             save_c1:
                     mov prevdicar1, di
                     jmp end_scan_left
             save_c2:
                     mov prevdicar2, di
             end_scan_left:
+                    pop cx
                     pop si
                     pop di
             ret
@@ -2125,7 +2199,9 @@ scan_left_p endp
 scan_up_p     proc
             push di
             push si
+            push cx
             mov si,offset temp_color_powerup
+            mov cx,pixel_size
             cmp powerupchooser, 1
             jnz scan_up_2 
             scan_up_1:
@@ -2133,13 +2209,19 @@ scan_up_p     proc
                         jnz save_c12
                         sub di, k + 1
                         dec si
-                        jmp scan_up_1
+                        dec cx
+                        jnz scan_up_1
+                        ;jmp scan_up_1
+            jmp save_c12
             scan_up_2:
                         cmpsb 
                         jnz save_c22
                         sub di,k + 1
                         dec si
-                        jmp scan_up_2
+                        dec cx
+                        jnz scan_up_2
+                        ;jmp scan_up_2
+            jmp save_c22
             save_c12:
                     mov prevdicar1, di
                     dec prevdicar1
@@ -2150,6 +2232,7 @@ scan_up_p     proc
                     dec prevdicar2
                     add prevdicar2, k
             end_scan_up:
+                    pop cx
                     pop si
                     pop di
             ret
@@ -2159,7 +2242,9 @@ scan_up_p     endp
 scan_left_o proc
             push di
             push si
+            push cx
             mov si,offset obstacle_color
+            mov cx,pixel_size
             cmp temp_current_pass, 1
             jnz scan_left_2o 
             scan_left_1o:
@@ -2167,19 +2252,26 @@ scan_left_o proc
                         jnz save_c1o
                         dec si
                         sub di,2
-                        jmp scan_left_1o
+                        dec cx
+                        jnz scan_left_1o
+                        ;jmp scan_left_1o
+            jmp save_c1o
             scan_left_2o:
                         cmpsb 
                         jnz save_c2o
                         dec si
                         sub di,2
-                        jmp scan_left_2o
+                        dec cx
+                        jnz scan_left_2o
+                        ;jmp scan_left_2o
+            jmp save_c2o
             save_c1o:
                     mov startobstaclepos_c1, di
                     jmp end_scan_lefto
             save_c2o:
                     mov startobstaclepos_c2, di
             end_scan_lefto:
+                    pop cx
                     pop si
                     pop di
             ret
@@ -2188,7 +2280,9 @@ scan_left_o endp
 scan_up_o     proc
             push di
             push si
+            push cx
             mov si,offset obstacle_color
+            mov cx,pixel_size
             cmp temp_current_pass, 1
             jnz scan_up_2o
             scan_up_1o:
@@ -2196,13 +2290,19 @@ scan_up_o     proc
                         jnz save_c12o
                         sub di, k + 1
                         dec si
-                        jmp scan_up_1o
+                        dec cx
+                        jnz scan_up_1o
+                        ;jmp scan_up_1o
+            jmp save_c12o
             scan_up_2o:
                         cmpsb 
                         jnz save_c22o
                         sub di,k + 1
                         dec si
-                        jmp scan_up_2o
+                        dec cx
+                        jnz scan_up_2o
+                        ;jmp scan_up_2o
+            jmp save_c22o
             save_c12o:
                     mov startobstaclepos_c1, di
                     dec startobstaclepos_c1
@@ -2213,6 +2313,7 @@ scan_up_o     proc
                     dec startobstaclepos_c2
                     add startobstaclepos_c2, k
             end_scan_upo:
+                    pop cx
                     pop si
                     pop di
             ret
@@ -2655,6 +2756,7 @@ trackUp proc far
                     mov   x, ax
                     mov   y, bx
                     mov   dx, widthT
+                    add total_length, dx
                     mov   lengthD, dx
                     mov   fill,1
                     mov   addFill, 1
@@ -2673,6 +2775,7 @@ trackUp proc far
                     mov   x, ax
                     mov   y, bx
                     mov   dx, widthT
+                    add total_length, dx
                     mov   lengthD, dx
                     call  horizLineR
                     mov   fill,1
@@ -2751,6 +2854,7 @@ trackDown proc far
                     mov   x, ax
                     mov   y, bx
                     mov   dx, widthT
+                    add total_length, dx
                     mov   lengthD, dx
                     call  horizLineL
                     mov   fill,1
@@ -2769,6 +2873,7 @@ trackDown proc far
                     mov   x, ax
                     mov   y, bx
                     mov   dx, widthT
+                    add total_length, dx
                     mov   lengthD, dx
                     mov   fill,1
                     mov   addFill, 1
@@ -2849,6 +2954,7 @@ trackRight proc far
                     mov   x, ax
                     mov   y, bx
                     mov   dx, widthT
+                    add total_length, dx
                     mov   lengthD, dx
                     call  verticalLineU
                     mov   fill,1
@@ -2867,6 +2973,7 @@ trackRight proc far
                     mov   x, ax
                     mov   y, bx
                     mov   dx, widthT
+                    add total_length, dx
                     mov   lengthD, dx
                     mov   fill,1
                     mov   addFill, 1
@@ -2948,6 +3055,7 @@ trackLeft proc far
                     mov   x, ax
                     mov   y, bx
                     mov   dx, widthT
+                    add total_length, dx
                     mov   lengthD, dx
                     mov   fill, 1
                     mov   addFill, 1
@@ -2966,6 +3074,7 @@ trackLeft proc far
                     mov   x, ax
                     mov   y, bx
                     mov   dx, widthT
+                    add total_length, dx
                     mov   lengthD, dx
                     call  verticalLineD
                     mov   fill,1
@@ -3713,9 +3822,13 @@ drawUp proc far                                     ;;; after checking
   
       skipSwapU:    
                     mov   lengthT, ax
+                    add total_length, ax
                     call  trackUp
                     mov   ax, lengthD
                     mov   lengthT, ax
+                    mov ax, widthT
+                    mov lengthD, ax
+                    mov lengthT, ax
      
       exitU:        
                     mov   dontDraw, 0
@@ -3735,9 +3848,13 @@ drawRight proc far                                  ;;; after checking
 
       skipSwapR:    
                     mov   lengthT, ax
+                    add total_length, ax
                     call  trackRight
                     mov   ax, lengthD
                     mov   lengthT, ax
+                    mov ax, widthT
+                    mov lengthD, ax
+                    mov lengthT, ax
      
       exitR:        
                     mov   dontDraw, 0
@@ -3757,6 +3874,7 @@ drawLeft proc far                                   ;;; after checking
 
       skipSwapL:    
                     mov   lengthT, ax
+                    add total_length, ax
                     mov ax, lastDirection
                     cmp ax,3
                     jz dontAddL
@@ -3765,6 +3883,9 @@ drawLeft proc far                                   ;;; after checking
                     call  trackLeft
                     mov   ax, lengthD
                     mov   lengthT, ax
+                    mov ax, widthT
+                    mov lengthD, ax
+                    mov lengthT, ax
      
       exitL:        
                     mov   dontDraw, 0
@@ -3784,9 +3905,13 @@ drawDOWN proc far
                     mov   temporaryLength, ax
       skipSwapD:    
                     mov   lengthT, ax
+                    add total_length, ax
                     call  trackDown
                     mov   ax, lengthD
                     mov   lengthT, ax
+                    mov ax, widthT
+                    mov lengthD, ax
+                    mov lengthT, ax
      
       exitD:        
                     mov   dontDraw, 0
@@ -3942,6 +4067,7 @@ drawEndLine endp
 
 
 drawStartLine proc far
+        mov total_length, 0
         mov changesLeft, 0
         mov x1,0
         mov x2,0
@@ -4061,7 +4187,7 @@ markend endp
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;time is overrrrrrrrrr
 timeover proc     
 endofgame:
-mov aX, 0600h ;bacground
+      mov aX, 0600h ;bacground
       mov bh, 79
       mov cx, 0603h
       mov dx, 1324h       
@@ -4074,8 +4200,7 @@ mov aX, 0600h ;bacground
     INT 10H 
 
     mov ah,9
-
-        mov dx,offset gameovermsg
+    mov dx,offset gameovermsg
     int 21h
     ;;;;;;;;;;;;;;;;;;;;;;
     MOV AH,02  
@@ -4085,8 +4210,7 @@ mov aX, 0600h ;bacground
     INT 10H 
     ;;;;;;;
     mov ah,9
-
-        mov dx,offset firstPlayerName+2
+    mov dx,offset firstPlayerName+2
     int 21h
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;; secondplayer
     MOV AH,02  
@@ -4100,27 +4224,26 @@ mov aX, 0600h ;bacground
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;score1    
     ;;;;;;;;;;;;;;;;;;;;;;;;;monkey photo
    
-mov di ,25728
-call drawcrying
-;;;;;;;;;;;;;;;;;;; bluecar over
-mov di,25632
-call drawleftinwinning 
-mov di,25828
-call drawrightinwinng
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;; return to main
-call afterend
-
-ret
+    mov di ,25728
+    call drawcrying
+    ;;;;;;;;;;;;;;;;;;; bluecar over
+    mov di,25632
+    call drawleftinwinning 
+    mov di,25828
+    call drawrightinwinng
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; return to main
+    call afterend
+    ret
 timeover endp
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;winerrrrrrrrrrrrrrrrrrr
 getwinner proc 
     
-mov aX, 0600h ;bacground
-      mov bh, 03h
-      mov cx, 0603h
-      mov dx, 1324h       
-      int 10h 
+    mov aX, 0600h ;bacground
+    mov bh, 03h
+    mov cx, 0603h
+    mov dx, 1324h       
+    int 10h 
 
     MOV AH,02  
     MOV BH,00  ;page    
@@ -4129,8 +4252,7 @@ mov aX, 0600h ;bacground
     INT 10H 
 
     mov ah,9
-
-        mov dx,offset winningmsg
+    mov dx,offset winningmsg
     int 21h
     ;;;;;;;;;;;;;;;;;;;;;;
     MOV AH,02  
@@ -4175,14 +4297,15 @@ mov aX, 0600h ;bacground
     mov di,25728
     
 ;;;;;;;;;;;;;;;;;;; bluecar over
- mov di,25632
-call drawleftinwinning 
-mov di,25828
-call drawrightinwinng
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;; return to main
-mov di,25728
-call drawcelebrate
-call afterend
+    mov di,25632
+    call drawleftinwinning 
+    mov di,25828
+    call drawrightinwinng
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; return to main
+    mov di,25728
+    call drawcelebrate
+    call afterend
+    ret
 getwinner endp
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;powerups section
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;first in statusbar
@@ -4958,109 +5081,106 @@ randompoweratbegining proc far
 
 generalrandom:
 
-;mov cx,global_delay
-;call my_delay
-mov   ah, 2ch
-int   21h   
-mov ah,0
-mov al,dl
-add al,fun
-mov cl,dh
-ror al,cl
-mov fun,al
-mov bl,fun
+        mov   ah, 2ch
+        int   21h   
+        mov ah,0
+        mov al,dl
+        add al,fun
+        mov cl,dh
+        ror al,cl
+        mov fun,al
+        mov bl,fun
+         
+        mov randomforbegin ,bl
 
-               
-mov randomforbegin ,bl
-
-mov ax,0
- mov ax,320
- mov bl,randomforbegin
- mul bl 
- mov specialdi,ax
- mov di,specialdi
- mov currentspecial,ax
- beginchecking:
- mov counter2,320
- scanrow: 
- call checkdirctionsfordirection
- cmp foundflag,1
- jz success
-add currentspecial,1
- dec counter2
- cmp counter2,0
- jz restsuccess
- jnz scanrow
- success:
- mov di,currentspecial
-  mov foundflag,0 
-jmp handelsucess
- restsuccess:
- dec counter
- cmp counter,0
- jz endranomization
- jnz generalrandom
- handelsucess:
- 
- mov al,randomforbegin
- mov ah,0
- mov bl,4
- div bl
- mov reminder4begin,ah
- cmp reminder4begin,4
- jz restsuccess
- mov di,currentspecial 
- cmp reminder4begin,3
- jnz anotherpower
- call drawbeatme
- jmp restsuccess
- anotherpower:
-cmp reminder4begin,2
- jnz anotherpower2
- call drawflyinten
- jmp restsuccess
- anotherpower2:
- cmp reminder4begin,1
- jnz anotherpower3
- call drawfire
- jmp restsuccess
- anotherpower3:
- cmp reminder4begin,0 
- call drawbomb
- jmp restsuccess
+        mov ax,0
+        mov ax,320
+        mov bl,randomforbegin
+        mul bl 
+        mov specialdi,ax
+        mov di,specialdi
+        mov currentspecial,ax
+        beginchecking:
+            mov counter2,320
+        scanrow: 
+            call checkdirctionsfordirection
+            cmp foundflag,1
+            jz success
+            add currentspecial,1
+            dec counter2
+            cmp counter2,0
+            jz restsuccess
+            jnz scanrow
+        success:
+            mov di,currentspecial
+            mov foundflag,0 
+            jmp handelsucess
+        restsuccess:
+            dec counter
+            cmp counter,0
+            jz endranomization
+            jnz generalrandom
+        handelsucess:
+        
+            mov al,randomforbegin
+            mov ah,0
+            mov bl,4
+            div bl
+            mov reminder4begin,ah
+            cmp reminder4begin,4
+            jz restsuccess
+            mov di,currentspecial 
+            cmp reminder4begin,3
+            jnz anotherpower
+            call drawbeatme
+            jmp restsuccess
+            anotherpower:
+            cmp reminder4begin,2
+            jnz anotherpower2
+            call drawflyinten
+            jmp restsuccess
+            anotherpower2:
+            cmp reminder4begin,1
+            jnz anotherpower3
+            call drawfire
+            jmp restsuccess
+            anotherpower3:
+            cmp reminder4begin,0 
+            call drawbomb
+            jmp restsuccess
 endranomization:
 ret
 randompoweratbegining endp
 
 checkdirctionsfordirection proc far
-mov bx,currentspecial
-mov di,bx 
-lea si,floor
-mov dx,pixel_size             
+                            mov bx,currentspecial
+                            mov di,bx 
+                            lea si,floor
+                            mov dx,pixel_size             
                           
                             beginrightb:
-                            mov cx,pixel_size
+                                mov cx,pixel_size
                             tryrightb:
-                            cmpsb
-                           jnz vantcreate2
-                            dec si
-                            dec di
-                            add di,k
-                            dec cx
-                            jnz tryrightb
-                            lea si,floor                         
-                            sub di,2240
-                            inc di
-                            dec dx
-                            jnz beginrightb
-                            mov currentpoerdirection,1                                               
-                            jmp cancreateup2b
+                                cmpsb
+                                jnz vantcreate2
+                                dec si
+                                dec di
+                                add di,k
+                                dec cx
+                                jnz tryrightb
+                                lea si,floor                         
+                                sub di,2240
+                                inc di
+                                dec dx
+                                jnz beginrightb
+                                mov currentpoerdirection,1                                               
+                                jmp cancreateup2b
                             vantcreate2:
-                            mov foundflag,0                            
-                            ret
+                                mov foundflag,0                            
+                                ret
                             cancreateup2b:
-                            mov foundflag,1                            
-                            ret                           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;powerleft
+                                mov foundflag,1                            
+                                ret                           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;powerleft
                             
 checkdirctionsfordirection endp
  drawleftinwinning  proc
@@ -5091,31 +5211,32 @@ JNZ REPEATT6
 ret
 drawrightinwinng endp
 afterend proc
-mov timer,0
- mov ah, 2ch
+    mov timer,0
+    mov ah, 2ch
     int 21h
     mov prevsec, dh
 
-taketimeE2:
-mov bl,cursec
-mov prevsec,bl
-    mov ah, 2ch
-    int 21h
-    mov cursec, dh
-    mov bh,prevsec
-    ;sub cursec, bl ; Calculate the difference in seconds
-    cmp cursec, bh 
-    je taketimeE2
-    inc timer      ; Check if 10 seconds have passed
-    cmp timer,5
+    taketimeE2:
+        mov bl,cursec
+        mov prevsec,bl
+        mov ah, 2ch
+        int 21h
+        mov cursec, dh
+        mov bh,prevsec
+        ;sub cursec, bl ; Calculate the difference in seconds
+        cmp cursec, bh 
+        je taketimeE2
+        inc timer      ; Check if 10 seconds have passed
+        cmp timer,5
 
-    jge returnn     ; If 10 seconds have passed, display the message
-    jmp taketimeE2
-    returnn:
-    mov ah,00h 
-mov al,03h 
-int 10h
-jmp lopp
+        jge returnn     ; If 10 seconds have passed, display the message
+        jmp taketimeE2
+        returnn:
+            mov ah,00h 
+            mov al,03h 
+            int 10h
+        call initialize_vars
+        ret
 afterend endp
 drawcelebrate proc
   lea si,celebratemonkey

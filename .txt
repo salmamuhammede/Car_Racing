@@ -1,0 +1,629 @@
+ drawleftcarinstatus proc
+ MOV SI,offset leftcaringame
+ MOV DX,20
+
+REPEAT3:
+MOV CX,33
+REP MOVSB
+ADD DI,SCREEN_WIDTH-33
+DEC DX
+JNZ REPEAT3
+ret
+ drawleftcarinstatus endp
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ drawrightcarinstatus proc
+ MOV SI,offset rightcar
+  MOV DX,20
+    REPEAT2:
+    MOV CX,37
+REP MOVSB
+ADD DI,SCREEN_WIDTH-37
+DEC DX
+JNZ REPEAT2
+ret
+drawrightcarinstatus endp
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;cars
+; ------------------------------------------------------------------------------;
+draw_c            proc
+                push di
+                pusha  ; for safety
+                mov bl,pixel_size ; loop pixel size times
+                my_draw_c:  mov cx,pixel_size ; for stosb 
+                        rep movsb  ; draw horizontal line
+                        sub di,pixel_size ; return to original position
+                        add di,k ; new row
+                        dec bl ; loop pixel size times
+                        jnz my_draw_c
+                popa
+                pop di
+                ret  
+draw_c            endp
+;----------------------------------------------------------------------------------->
+draw_l           proc
+        ; ---- store changed vars ------------ ;
+                push cx 
+                push ax
+                push di
+                mov cx,pixel_size ; for stosb
+                rep movsb
+        ; --- return to the original positions -- ;
+                pop di
+                pop ax
+                pop cx
+                ret  
+draw_l            endp
+;-------------------------------------------------------------------------------------
+draw_v          proc 
+                push di
+                push cx  
+                mov cx,pixel_size
+                draw_it:
+                        stosb
+                        dec di
+                        add di,k  
+                        dec cx
+                        jnz draw_it
+                pop cx
+                pop di  
+                ret
+draw_v          endp
+; --------------------------------------------- ;
+; ---------------------------------------------------------------------;
+drawspecialobstacle proc
+                    push si
+                    push dx
+                    push di
+                    mov si,offset obstacle_color
+                    mov di,posforobstacle ; new position
+                    MOV DX,lengthObstacle - 1
+                    spo:
+                        mov cx,lengthObstacle - 1
+                        spo2:
+                            movsb
+                            dec si
+                            dec cx
+                            jnz spo2
+                        sub di,lengthObstacle - 1
+                        add di,k
+                        dec dx
+                        jnz spo
+                    pop di
+                    pop dx
+                    pop si
+                    ret
+drawspecialobstacle endp
+; ----------------- obstacle backup for powers ------------------------;
+drawendformove  proc
+                pusha
+                mov bp,endLineStart ; starting position
+                mov bx, endLineEnd ; end position
+                sub bx,bp 
+                mov ax,bx
+                mov si,k
+                mov dx,0
+                div si ; divide by k, if no remainder then it is vertical
+                cmp ax,0 
+                jz onsamehori
+                onsamevert:
+                            mov cx,bx
+                            mov si,offset color_endline ; draw the endline color
+                            mov di,endLineStart ; starting position
+                            endlinedraw:
+                                        movsb ; copy the value to the segment
+                                        dec si ; adjust the values
+                                        dec di
+                                        add di,k
+                                        dec cx ; dec loop 
+                                        jnz endlinedraw
+                            jmp enddrawendline
+                onsamehori:
+                            mov cx,bx ; difference
+                            mov si,offset color_endline ; draw the endline color
+                            mov di,endLineStart ; starting position
+                            endlinedraw2:
+                                movsb ; copy the value to the segment
+                                dec si ; adjust the values
+                                dec cx ; dec loop 
+                                jnz endlinedraw2
+                enddrawendline:
+                popa
+                ret
+drawendformove  endp
+; --------------------------------------------------;
+obstacleDraw proc far
+
+                          ;;; obstacle;;;
+                    push bx
+                    push cx
+                    push dx
+                    mov dx, cx
+                    mov cx, widthT
+                    
+                    sub cx, dx
+                    mov dx, cx
+                    mov cx, ax ;;;; 3shan el color
+                    cmp drawObstacle, 0
+                    jz skipObstacleD
+                    cmp addFill,1         ;; corners msh hytrsm feha
+                    jz skipObstacleD
+                    mov bx, lengthD
+                    cmp bx, widthT
+                    jb skipObstacleD
+
+
+                    ;;; drawing
+                    mov ax, obstacleLane
+                    mov bx, lengthLane
+                    push dx
+                    mul bx
+                    pop dx
+                    cmp dx, ax
+                    jbe skipObstacleD
+                    add ax, lengthLane
+                    cmp dx, ax
+                    ja skipObstacleD
+                                       
+                    ;;;
+                    
+                     mov al, 09h
+                    
+                    mov bx, lengthObstacle
+                        inc lengthDrawn   
+                    sub bx, lengthDrawn
+
+                    jz addWidthObstacleD
+                    
+                    ;;;
+                   
+                    
+
+                    
+                    jmp noChangeD     ;;; draw obstacle
+                    addWidthObstacleD:
+                    inc widthDrawn
+                    
+                    mov lengthDrawn, 0
+                    mov ax, widthDrawn
+                    inc ax
+                    cmp ax, lengthObstacle
+                    jz obstacleDone
+                    jmp skipObstacleD
+                    obstacleDone:
+                    mov drawObstacle,0
+                    mov widthDrawn, 0
+                    mov lengthDrawn, 0
+                    skipObstacleD:
+                    mov ax, cx
+                    nochangeD:
+
+                    pop dx
+                    pop cx
+                    pop bx
+                    ret
+                    ;;; obstacle;;;
+obstacleDraw endp
+drawUp proc far                                     ;;; after checking
+
+                    call  checkUP
+                    cmp   dontDraw, 1
+                    jz    exitU
+                    mov   ax, temporaryLength
+                    cmp   ax, temporaryLength2
+                    jbe   skipSwapU
+                    mov   ax, temporaryLength2
+                    mov   temporaryLength, ax
+  
+      skipSwapU:    
+                    mov   lengthT, ax
+                    call  trackUp
+                    mov   ax, lengthD
+                    mov   lengthT, ax
+     
+      exitU:        
+                    mov   dontDraw, 0
+                    ret
+drawUp endP
+
+drawRight proc far                                  ;;; after checking
+
+                    call  checkRight
+                    cmp   dontDraw, 1
+                    jz    exit
+                    mov   ax, temporaryLength
+                    cmp   ax, temporaryLength2
+                    jbe   skipSwapR
+                    mov   ax, temporaryLength2
+                    mov   temporaryLength, ax
+
+      skipSwapR:    
+                    mov   lengthT, ax
+                    call  trackRight
+                    mov   ax, lengthD
+                    mov   lengthT, ax
+     
+      exitR:        
+                    mov   dontDraw, 0
+                    ret
+drawRight endp
+
+drawLeft proc far                                   ;;; after checking
+
+                    call  checkLeft
+                    cmp   dontDraw, 1
+                    jz    exitL
+                    mov   ax, temporaryLength
+                    cmp   ax, temporaryLength2
+                    jbe   skipSwapL
+                    mov   ax, temporaryLength2
+                    mov   temporaryLength, ax
+
+      skipSwapL:    
+                    mov   lengthT, ax
+                    mov ax, lastDirection
+                    cmp ax,3
+                    jz dontAddL
+                    inc changesLeft
+                    dontAddL:
+                    call  trackLeft
+                    mov   ax, lengthD
+                    mov   lengthT, ax
+     
+      exitL:        
+                    mov   dontDraw, 0
+                    ret
+drawLeft endp
+
+
+drawDOWN proc far
+
+                    call  checkDown
+                    cmp   dontDraw, 1
+                    jz    exitD
+                    mov   ax, temporaryLength
+                    cmp   ax, temporaryLength2
+                    jbe   skipSwapD
+                    mov   ax, temporaryLength2
+                    mov   temporaryLength, ax
+      skipSwapD:    
+                    mov   lengthT, ax
+                    call  trackDown
+                    mov   ax, lengthD
+                    mov   lengthT, ax
+     
+      exitD:        
+                    mov   dontDraw, 0
+                    ret
+drawDOWN endp
+drawTrack proc far
+   
+
+
+                    call  drawStartLine
+
+                    mov   ax, widthT
+                    mov   x2, ax
+
+                    call  drawDown
+
+                    mov   cx, 00ffh                 ;;; 3dd el randoms
+      ;;; random
+      rand:         
+        
+                    push  cx
+                    mov   ah, 2ch
+                    int   21h
+
+      ;; test2
+                    mov  ah, 0
+                    mov  al, dl                       ;;micro seconds
+                    add al, prev_rand
+                    mov cl, dh
+                    ror al, cl
+                    mov prev_rand, al
+                    mov cx, dx
+                    mov bl, 4
+                    div  bl
+                    jz next
+
+                    call RandObst
+
+                    cmp   ah, 0
+                    jz    U
+                    cmp   ah, 3
+                    jz    D
+                    cmp   ah,1
+                    jz    R
+                    cmp   ah,2
+                    jz    L
+      U:            
+                    call  drawUP
+                    jmp   next
+      D:            
+                    call  drawDOWN
+                    jmp   next
+      R:            
+                    mov   ax, lengthT
+                    push  ax
+                    add   ax, lengthT
+                    mov   lengthT, ax
+                    call  drawRight
+                    pop   ax
+                    mov   lengthT, ax
+                    jmp   next
+        
+      L:            
+                    mov   ax, lengthT
+                    push  ax
+                    add   ax, lengthT
+                    mov   lengthT, ax
+                    call  drawLeft
+                    pop   ax
+                    mov   lengthT, ax
+                    jmp   next
+        
+      next:         
+                    pop   cx
+                    loop  rand
+                    call  drawEndLine
+      ;;;;; inline chat row
+                    mov   ax, 320
+                    mov   bx, word ptr row
+                    inc   bx
+                    mul   bx
+                    mov   di, ax
+                    mov   al, 0eh
+                    mov   cx, 320
+                    rep   stosb
+        
+      ;;;;;inline chat row
+
+                    ret
+drawtrack endp
+
+drawEndLine proc far
+                    mov   ax, x1
+                    mov   bx, x2
+                    cmp   ax, bx
+                    jz    vertical
+                    mov   ax, 320
+                    mov   bx, y1
+                    mul   bx
+                    add   ax, x1
+                    mov   di, ax
+                    mov   cx, x2
+                    sub   cx, x1
+
+                    mov   al, 04h
+                    mov endLineStart, di
+
+                    rep   stosb
+                    mov endLineEnd, di
+                    dec endLineEnd
+
+                    jmp   endLine
+      vertical:     
+                    mov   cx, y2
+                    sub   cx, y1
+                    mov   ax, 320
+                    mov   bx, y1
+                    mul   bx
+                    add   ax, x1
+                    mov   di, ax
+                    mov endLineStart, di
+      color:        
+                    mov   al, 04h
+                    stosb
+                    add   di, 319
+                    loop  color
+
+                    mov endLineEnd, di
+                    dec endLineEnd
+    
+    
+    
+      endLine:      
+                    ret
+drawEndLine endp
+
+
+drawStartLine proc far
+        mov changesLeft, 0
+        mov x1,0
+        mov x2,0
+        mov y1,0
+        mov y2,0
+        mov lastDirection,1
+        mov ax, widthT
+        mov lengthT, ax
+        mov lengthD, ax
+        mov dontDraw,0
+        mov drawObstacle,0
+        mov x,0
+        mov y,0
+      ;;start line
+                    mov   ax, widthT
+                    mov   lengthD, ax
+                    call  horizLineR
+                    mov   ax, lengthT
+                    mov   lengthD, ax
+    
+                    mov   x, 0
+      ;;start line
+                    ret
+drawStartLine endp
+
+;---------------------------------------------> power ups status bar
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; clearscreen of obstacle
+Noobstacleleft proc
+    mov si,offset clearfromstatus
+    MOV DX,aggreedsizefrostausbar
+
+    clearstatus:
+    MOV CX,aggreedsizefrostausbar
+REP MOVSB
+ADD DI,320-aggreedsizefrostausbar
+DEC DX
+JNZ clearstatus
+      ret
+Noobstacleleft endp
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+drawcreateob proc
+lea si,createob ;left di for power ups 46120-----------right 46328
+;mov di,48888
+MOV DX,aggreedsizefrostausbar
+
+    REPEATob2:
+    MOV CX,aggreedsizefrostausbar
+REP MOVSB
+ADD DI,320-aggreedsizefrostausbar
+DEC DX
+JNZ REPEATob2
+
+ret
+drawcreateob endp
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+drawflyobstacle proc
+lea si,flyob ;left di for power ups 46120-----------right 46328 update ll 48680  rr 48888
+;mov di,48888
+MOV DX,aggreedsizefrostausbar
+
+    REPEATfly2:
+    MOV CX,aggreedsizefrostausbar
+REP MOVSB
+ADD DI,320-aggreedsizefrostausbar
+DEC DX
+JNZ REPEATfly2
+ret
+drawflyobstacle endp
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+drawdecresesofanother proc
+lea si,decreseimg; left di for power ups 46120-----------right 46328
+;mov di,46328
+MOV DX,aggreedsizefrostausbar
+
+    REPEATincrese:
+    MOV CX,aggreedsizefrostausbar
+REP MOVSB
+ADD DI,320-aggreedsizefrostausbar
+DEC DX
+JNZ REPEATincrese
+
+ret
+drawdecresesofanother endp 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;power ups in track
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;fly for 222222
+drawflyinten proc
+;mov di,4824
+mov si,offset flyinten
+MOV DX,aggreedsize
+flyu:
+MOV CX,aggreedsize
+REP MOVSB
+ADD DI,320-aggreedsize
+DEC DX
+JNZ flyu
+ret
+drawflyinten endp
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; bomb for 4444444444
+drawbomb proc
+;mov di,8644
+mov si,offset bomb
+MOV DX,aggreedsize
+bomb8:
+MOV CX,aggreedsize
+REP MOVSB
+ADD DI,320-aggreedsize
+DEC DX
+JNZ bomb8
+ret
+drawbomb endp
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; fire for 11111111111111111
+drawfire proc
+;mov di,8664
+mov si,offset fire
+MOV DX,aggreedsize
+fire8:
+MOV CX,aggreedsize
+REP MOVSB
+ADD DI,320-aggreedsize
+DEC DX
+JNZ fire8
+ret
+drawfire endp
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; decrese enemy for 333333333333333333
+drawbeatme proc
+;mov di,12484
+mov si,offset beatme
+MOV DX,aggreedsize
+beatme8:
+MOV CX,aggreedsize
+REP MOVSB
+ADD DI,320-aggreedsize
+DEC DX
+JNZ beatme8
+ret
+drawbeatme endp
+drawcleaning proc
+mov si,offset floorpic
+MOV DX,aggreedsize
+darkgrey:
+MOV CX,aggreedsize
+REP MOVSB
+ADD DI,320-aggreedsize
+DEC DX
+JNZ darkgrey
+ret
+drawcleaning endp
+ drawleftinwinning  proc
+lea si,blueover
+     MOV DX,30
+
+    REPEATT5:
+    MOV CX,50
+REP MOVSB
+ADD DI,SCREEN_WIDTH-50
+DEC DX
+JNZ REPEATT5
+ret
+;;;;;;;;;;;;;;;;; redcarin over
+drawleftinwinning  endp
+
+ drawrightinwinng proc
+lea si,redover
+ 
+     MOV DX,30
+
+    REPEATT6:
+    MOV CX,55
+REP MOVSB
+ADD DI,SCREEN_WIDTH-55
+DEC DX
+JNZ REPEATT6
+ret
+drawrightinwinng endp
+drawcelebrate proc
+  lea si,celebratemonkey
+     MOV DX,40
+    REPEATT4:
+    MOV CX,58
+REP MOVSB
+ADD DI,SCREEN_WIDTH-58
+DEC DX
+JNZ REPEATT4
+ret
+drawcelebrate endp 
+drawcrying proc
+    lea si,gameoverpic
+    
+     MOV DX,70
+
+    REPEAT4:
+    MOV CX,90
+REP MOVSB
+ADD DI,SCREEN_WIDTH-90
+DEC DX
+JNZ REPEAT4
+ret 
+drawcrying endp

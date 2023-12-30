@@ -1,8 +1,15 @@
 .286
-extern background:far
-extern info:far
-public initialpmsg,Player1msg,interruptmsg,choicePhasemsg,startChatMsg,sppoints,firstPlayerName,secondPlayerName,fppoints,startgameemsg
+
+;extern welcome:far
+;extern EnterGame:far
+public Player1msg,interruptmsg,choicePhasemsg,startChatMsg,sppoints,firstPlayerName,secondPlayerName,startgameemsg,wrong,wrong2,wrongname1flag,wrongname2flag
 public endmsg,startChatMsg,rightcar
+public beginpage,leftcaringame,SCREEN_HEIGHT,SCREEN_WIDTH,pixel_size,rightcar,obstacle_color
+public posforobstacle,lengthObstacle,endLineStart,pixel_size,endLineEnd,color_endline,widthT
+public drawObstacle,lengthD,obstacleLane,lengthDrawn,lengthT,widthDrawn,temporaryLength2,temporaryLength
+public dontDraw,changesLeft,lastDirection,prev_rand,row,x1,x2,y1,y2,clearfromstatus,aggreedsize,aggreedsizefrostausbar
+public createob,bomb,floor,Player2msg,flyinten,lengthLane,redover,fire,flyob,decreseimg,beatme,floorpic,bluecar,blueover,celebratemonkey,gameoverpic
+public secondss,x,y,fill,skipFill,addFill,pos_box1,pos_box2,lastObstacle,drawn,color_track
 .MODEL huge
 .Stack 64
 .Data
@@ -1585,7 +1592,7 @@ delay_m_1 dw 2
 
 delay_f_2  dw 2
 delay_m_2 dw 2
-global_delay dw 24200
+global_delay dw 14200
 state_c1     db 1 ; 0: freeze , 1: move
 state_c2     db 1 ; 0: freeze , 1: move
 ; ----------------------------------- ;
@@ -1652,10 +1659,10 @@ poweruptimer db 0
 powerupflag db 0
 canpower db 0
 floor db 8
-endgametimee equ 60
+endgametimee equ 120
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;s&z varibles
 Flyfloor db 54;skipobsatacle db  
-beatmefloor db 53
+beatmefloor db 53 
 firefloor db 16
 bombfloor db 122
 currentpowerforCar1 db 4
@@ -1691,11 +1698,12 @@ startobstaclepos_c2 dw 0 ; save the starting position of obstacle to pass
 temp_color_powerup  db 0
 temp_current_pass  dw 0
 ;;;;;;;;;;;;;;;;;;;;;;;;
+total_length dw 0
 
 
 .Code
-;include begin.inc
-;include welcome.inc
+;include draws.asm
+;include welcome.asm
 include game.inc
 ;include time.inc
 main PROC far
@@ -1704,15 +1712,15 @@ mov ds, ax
 
 call game
 
-MOV AH, 0
-INT 16h
+;MOV AH, 0
+;INT 16h
 
-MOV AH,4CH
-INT 21H
+;MOV AH,4CH
+;INT 21H
 ret
  main endp
 
 
 
 End main
- 
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; clearscreen of obstacle
